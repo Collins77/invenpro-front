@@ -5,6 +5,7 @@ import AddStock from "./pages/AddStock"
 import Products from "./pages/Products"
 import OutStockProducts from "./pages/OutStockProducts"
 import AddProduct from "./pages/AddProduct"
+import { Toaster } from "sonner"
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
           <Route path="add-product" element={<AddProduct />} />   
         </Route>
       </Routes>
+      <Toaster />
     </>
   )
 }

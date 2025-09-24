@@ -42,138 +42,6 @@ import { fetchProducts, addStock as addStockAPI, deleteProduct as deleteProductA
 
 
 // Sample products data
-// const productsData = [
-//     {
-//         id: 1,
-//         name: 'Tusker Lager',
-//         category: 'Beer',
-//         brand: 'EABL',
-//         price: 350.00,
-//         stock: 45,
-//         status: 'Active',
-//         dateAdded: '2025-01-15',
-//         lastStocked: '2025-09-20',
-//         minStock: 10,
-//         description: '500ML Bottle'
-//     },
-//     {
-//         id: 2,
-//         name: 'Coca-Cola',
-//         category: 'Soft Drinks',
-//         brand: 'Coca-Cola',
-//         price: 120.00,
-//         stock: 0,
-//         status: 'Out of Stock',
-//         dateAdded: '2025-01-10',
-//         lastStocked: '2025-09-15',
-//         minStock: 20,
-//         description: '330ML Can'
-//     },
-//     {
-//         id: 3,
-//         name: 'Johnnie Walker Black',
-//         category: 'Spirits',
-//         brand: 'Diageo',
-//         price: 3500.00,
-//         stock: 8,
-//         status: 'Low Stock',
-//         dateAdded: '2025-02-01',
-//         lastStocked: '2025-09-18',
-//         minStock: 5,
-//         description: '750ML Bottle'
-//     },
-//     {
-//         id: 4,
-//         name: 'Heineken',
-//         category: 'Beer',
-//         brand: 'Heineken',
-//         price: 280.00,
-//         stock: 32,
-//         status: 'Active',
-//         dateAdded: '2025-01-20',
-//         lastStocked: '2025-09-19',
-//         minStock: 15,
-//         description: '500ML Bottle'
-//     },
-//     {
-//         id: 5,
-//         name: 'Jack Daniels',
-//         category: 'Spirits',
-//         brand: 'Jack Daniels',
-//         price: 4200.00,
-//         stock: 12,
-//         status: 'Active',
-//         dateAdded: '2025-02-10',
-//         lastStocked: '2025-09-17',
-//         minStock: 8,
-//         description: '750ML Bottle'
-//     },
-//     {
-//         id: 6,
-//         name: 'Sprite',
-//         category: 'Soft Drinks',
-//         brand: 'Coca-Cola',
-//         price: 120.00,
-//         stock: 25,
-//         status: 'Active',
-//         dateAdded: '2025-01-12',
-//         lastStocked: '2025-09-21',
-//         minStock: 20,
-//         description: '330ML Can'
-//     },
-//     {
-//         id: 7,
-//         name: 'Sprite',
-//         category: 'Soft Drinks',
-//         brand: 'Coca-Cola',
-//         price: 120.00,
-//         stock: 25,
-//         status: 'Active',
-//         dateAdded: '2025-01-12',
-//         lastStocked: '2025-09-21',
-//         minStock: 20,
-//         description: '330ML Can'
-//     },
-//     {
-//         id: 8,
-//         name: 'Sprite',
-//         category: 'Soft Drinks',
-//         brand: 'Coca-Cola',
-//         price: 120.00,
-//         stock: 25,
-//         status: 'Active',
-//         dateAdded: '2025-01-12',
-//         lastStocked: '2025-09-21',
-//         minStock: 20,
-//         description: '330ML Can'
-//     },
-//     {
-//         id: 9,
-//         name: 'Sprite',
-//         category: 'Soft Drinks',
-//         brand: 'Coca-Cola',
-//         price: 120.00,
-//         stock: 25,
-//         status: 'Active',
-//         dateAdded: '2025-01-12',
-//         lastStocked: '2025-09-21',
-//         minStock: 20,
-//         description: '330ML Can'
-//     },
-//     {
-//         id: 10,
-//         name: 'Sprite',
-//         category: 'Soft Drinks',
-//         brand: 'Coca-Cola',
-//         price: 120.00,
-//         stock: 25,
-//         status: 'Active',
-//         dateAdded: '2025-01-12',
-//         lastStocked: '2025-09-21',
-//         minStock: 20,
-//         description: '330ML Can'
-//     }
-// ]
 
 // Add Stock Modal Component
 const AddStockModal = ({ product, isOpen, onClose, onSubmit }) => {
@@ -508,12 +376,12 @@ const Products = () => {
                                         <td className="p-4">
                                             <div>
                                                 <div className="font-medium text-gray-900">{product.name}</div>
-                                                <div className="text-sm text-gray-500">{product.description}</div>
+                                                <div className="text-sm text-gray-500">{product.volume}</div>
                                             </div>
                                         </td>
                                         <td className="p-4 text-gray-700">{product.category}</td>
                                         <td className="p-4 text-gray-700">{product.brand}</td>
-                                        <td className="p-4 text-gray-700">{product.price.toLocaleString()}</td>
+                                        <td className="p-4 text-gray-700">{product.sellingPrice.toLocaleString()}</td>
                                         <td className="p-4">
                                             <div className="flex items-center gap-1">
                                                 <span className={`font-medium ${product.stock <= product.minStock ? 'text-red-600' : 'text-gray-900'}`}>

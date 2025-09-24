@@ -1,51 +1,44 @@
 import React, { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Search, Plus, Loader2Icon } from 'lucide-react'
+import { toast } from 'sonner';
+import { createProduct } from '../api';
 
-const products = [
-    { id: 1, name: 'Whiskey', category: 'Whiskey' },
-    { id: 2, name: 'Beer', category: 'Beer' },
-    { id: 3, name: 'Soft Drink', category: 'Soft Drink' },
-    { id: 4, name: 'Energy Drink', category: 'Energy Drink' },
-    { id: 5, name: 'Vodka', category: 'Vodka' },
-    { id: 6, name: 'Spirit', category: 'Energy Drink' },
-]
+const categories = [
+    { id: 1, name: 'Beer' },
+    { id: 2, name: 'Soft Drink' },
+    { id: 3, name: 'Whiskey' },
+    { id: 4, name: 'Vodka' },
+    { id: 5, name: 'Spirits' },
+];
 
-const SearchableSelect = ({ products, onSelect, placeholder = "Search products..." }) => {
-    const [isOpen, setIsOpen] = useState(false)
-    const [searchTerm, setSearchTerm] = useState('')
-    const [selectedProduct, setSelectedProduct] = useState(null)
-    const navigate = useNavigate()
+const SearchableSelect = ({ items, onSelect, placeholder = 'Select category...' }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selected, setSelected] = useState(null);
 
-    const filteredProducts = products.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const filtered = items.filter(item =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-    const handleSelect = (product) => {
-        setSelectedProduct(product)
-        setIsOpen(false)
-        setSearchTerm('')
-        onSelect(product)
-    }
-
-    const handleAddCategory = () => {
-        navigate('/add-category')
-    }
+    const handleSelect = item => {
+        setSelected(item);
+        setIsOpen(false);
+        setSearchTerm('');
+        onSelect(item.name);
+    };
 
     return (
-        <div className="relative w-full outline-none">
+        <div className="relative w-full">
             <div
-                className="flex items-center justify-between w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md cursor-pointer hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex items-center justify-between px-3 py-2 border rounded-md cursor-pointer bg-white"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <div className="flex items-center gap-2">
-                    <Search className="w-4 h-4 text-gray-400" />
-                    <span className={selectedProduct ? "text-gray-900" : "text-gray-500"}>
-                        {selectedProduct ? selectedProduct.name : placeholder}
-                    </span>
-                </div>
+                <span className={selected ? 'text-gray-900' : 'text-gray-400'}>
+                    {selected ? selected.name : placeholder}
+                </span>
                 <svg
                     className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
                     fill="none"
@@ -55,76 +48,95 @@ const SearchableSelect = ({ products, onSelect, placeholder = "Search products..
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
             </div>
-
             {isOpen && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
-                    <div className="p-3 border-b">
+                <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <div className="p-2 border-b">
                         <Input
-                            type="text"
-                            placeholder="Search categories..."
+                            placeholder="Search..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full outline-none"
-                            autoFocus
+                            onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
-
-                    <div className="max-h-60 overflow-y-auto">
-                        {filteredProducts.length > 0 ? (
-                            filteredProducts.map((product) => (
+                    <div>
+                        {filtered.length > 0 ? (
+                            filtered.map(item => (
                                 <div
-                                    key={product.id}
-                                    className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                                    onClick={() => handleSelect(product)}
+                                    key={item.id}
+                                    className="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                                    onClick={() => handleSelect(item)}
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                            <span className="text-xs font-medium text-gray-600">
-                                                {product.name.charAt(0)}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <div className="font-medium text-gray-900">{product.name}</div>
-                                            <div className="text-xs text-gray-500">{product.category}</div>
-                                        </div>
-                                    </div>
+                                    {item.name}
                                 </div>
                             ))
                         ) : (
-                            <div className="px-3 py-6 text-center text-gray-500">
-                                No products found
-                            </div>
+                            <div className="px-3 py-2 text-gray-400">No results found</div>
                         )}
-                    </div>
-
-                    <div className="border-t p-2">
-                        <Button
-                            variant="ghost"
-                            className="w-full justify-start gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                            onClick={handleAddCategory}
-                        >
-                            <Plus className="w-4 h-4" />
-                            Add Category
-                        </Button>
                     </div>
                 </div>
             )}
         </div>
-    )
-}
+    );
+};
 
 const AddProduct = () => {
     const location = useLocation()
-    const [setSelectedProduct] = useState(null)
 
     // Split the pathname and filter out empty strings
     const pathnames = location.pathname.split('/').filter((x) => x)
+    const initialForm = {
+        name: '',
+        category: '',
+        brand: '',
+        sellingPrice: 0,
+        purchasePrice: 0,
+        stock: 0,
+        minStock: 0,
+        volume: '',
+    };
 
-    const handleCategorySelect = (product) => {
-        setSelectedProduct(product)
-        console.log('Selected product:', product)
-    }
+    const [form, setForm] = useState(initialForm);
+    const [submitting, setSubmitting] = useState(false);
 
+    const handleChange = e => {
+        const { id, value, type } = e.target;
+        let val = value;
+
+        if (type === 'number') {
+            val = value === '' ? '' : Number(value);
+        }
+
+        setForm(prev => ({ ...prev, [id]: val }));
+    };
+
+    const handleCategorySelect = category => {
+        setForm({ ...form, category });
+    };
+
+    const handleSubmit = async (e) => {
+  e.preventDefault();
+  setSubmitting(true);
+
+  // Cast numeric fields properly
+  const productData = {
+    ...form,
+    sellingPrice: parseFloat(form.sellingPrice),
+    purchasePrice: parseFloat(form.purchasePrice),
+    stock: parseInt(form.stock, 10),
+    minStock: parseInt(form.minStock, 10),
+  };
+
+  try {
+    await createProduct(productData);
+    toast.success('Product added successfully!');
+    setForm(initialForm);
+  } catch (err) {
+    toast.error(err.message); // shows backend error
+  } finally {
+    setSubmitting(false);
+  }
+};
+
+    const handleReset = () => setForm(initialForm);
 
     return (
         <div>
@@ -165,93 +177,53 @@ const AddProduct = () => {
                     </h1>
                 </div>
                 <div className='p-4'>
-                    <form action="" className='w-full grid grid-cols-2 gap-4'>
+                    <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
                         <div className="space-y-2">
-                            <label htmlFor="product" className="text-sm font-medium text-gray-700">
-                                Product Name
-                            </label>
-                            <Input
-                                type="text"
-                                id="productName"
-                                placeholder="Enter name"
-                                className="w-full outline-none border border-gray-300"
-                            />
+                            <label htmlFor="name" className="text-sm font-medium">Product Name</label>
+                            <Input id="name" className="w-full outline-none border border-gray-300" value={form.name} onChange={handleChange} placeholder="Enter Product Name..." required />
                         </div>
 
-                        {/* Add other form fields here */}
                         <div className="space-y-2">
-                            <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
-                                Volume/Weight/Size
-                            </label>
-                            <Input
-                                type="text"
-                                id="quantity"
-                                placeholder="Enter volume"
-                                className="w-full outline-none border border-gray-300"
-                            />
+                            <label htmlFor="brand" className="text-sm font-medium">Brand</label>
+                            <Input id="brand" className="w-full outline-none border border-gray-300" value={form.brand} onChange={handleChange} placeholder="Enter Brand" required />
                         </div>
+
                         <div className="space-y-2">
-                            <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
-                                Purchase Price
-                            </label>
-                            <Input
-                                type="number"
-                                id="purchasePrice"
-                                placeholder="Enter purchase price"
-                                className="w-full outline-none border border-gray-300"
-                            />
+                            <label htmlFor="category" className="text-sm font-medium">Category</label>
+                            <SearchableSelect items={categories} onSelect={handleCategorySelect} />
                         </div>
+
                         <div className="space-y-2">
-                            <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
-                                Selling Price
-                            </label>
-                            <Input
-                                type="number"
-                                id="sellingPrice"
-                                placeholder="Enter selling price"
-                                className="w-full outline-none border border-gray-300"
-                            />
+                            <label htmlFor="sellingPrice" className="text-sm font-medium">Selling Price</label>
+                            <Input id="sellingPrice" className="w-full outline-none border border-gray-300" type="number" step="0.01" value={form.sellingPrice} placeholder="Enter Selling Price" onChange={handleChange} required />
                         </div>
+
                         <div className="space-y-2">
-                            <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
-                                Category
-                            </label>
-                            <SearchableSelect
-                                products={products}
-                                onSelect={handleCategorySelect}
-                                placeholder="Search and select a category..."
-                            />
+                            <label htmlFor="purchasePrice" className="text-sm font-medium">Purchase Price</label>
+                            <Input id="purchasePrice" className="w-full outline-none border border-gray-300" type="number" step="0.01" value={form.purchasePrice} placeholder="Enter Purchase Price" onChange={handleChange} required />
                         </div>
+
                         <div className="space-y-2">
-                            <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
-                                Starting Stock
-                            </label>
-                            <Input
-                                type="number"
-                                id="stockThreshold"
-                                placeholder="Enter a number"
-                                className="w-full outline-none border border-gray-300"
-                            />
+                            <label htmlFor="stock" className="text-sm font-medium">Starting Stock</label>
+                            <Input id="stock" className="w-full outline-none border border-gray-300" type="number" value={form.stock} placeholder="Enter Starting Stock" onChange={handleChange} required />
                         </div>
+
                         <div className="space-y-2">
-                            <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
-                                Low Stock Threshold
-                            </label>
-                            <Input
-                                type="number"
-                                id="stockThreshold"
-                                placeholder="Enter a number"
-                                className="w-full outline-none border border-gray-300"
-                            />
+                            <label htmlFor="minStock" className="text-sm font-medium">Minimum Stock</label>
+                            <Input id="minStock" className="w-full outline-none border border-gray-300" type="number" value={form.minStock} placeholder="Enter Minimum stock for alerts" onChange={handleChange} required />
                         </div>
-                        <div className='flex items-center gap-2'>
-                            <Button className='bg-black text-white cursor-pointer'>
-                                {/* <Loader2Icon className="animate-spin" /> */}
+
+                        <div className="space-y-2">
+                            <label htmlFor="volume" className="text-sm font-medium">Volume</label>
+                            <Input type="text" id="volume" className="w-full outline-none border border-gray-300" value={form.volume} onChange={handleChange} placeholder="250ML, 750ML..." />
+                        </div>
+
+                        <div className="col-span-2 flex gap-2 mt-4">
+                            <Button type="submit" disabled={submitting} className="bg-black text-white flex items-center gap-2">
+                                {submitting && <Loader2Icon className="animate-spin w-4 h-4" />}
                                 Submit
                             </Button>
-                            <Button variant="outline" className='cursor-pointer'>
-                                Reset Form
-                            </Button>
+                            <Button type="button" variant="outline" onClick={handleReset}>Reset</Button>
                         </div>
                     </form>
                 </div>

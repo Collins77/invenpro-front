@@ -1,23 +1,15 @@
-import React, { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, Plus, Loader2Icon } from 'lucide-react'
-
-const products = [
-  { id: 1, name: 'Tusker - 500ML', category: 'Beer' },
-  { id: 2, name: 'Coca-Cola - 330ML', category: 'Soft Drink' },
-  { id: 3, name: 'Pepsi - 330ML', category: 'Soft Drink' },
-  { id: 4, name: 'Heineken - 500ML', category: 'Beer' },
-  { id: 5, name: 'Sprite - 330ML', category: 'Soft Drink' },
-  { id: 6, name: 'Red Bull - 250ML', category: 'Energy Drink' },
-]
+import { Search, Plus } from 'lucide-react'
+import { fetchProducts, addStock } from '@/api'
+import { toast } from 'sonner'
 
 const SearchableSelect = ({ products, onSelect, placeholder = "Search products..." }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedProduct, setSelectedProduct] = useState(null)
-  const navigate = useNavigate()
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -28,10 +20,6 @@ const SearchableSelect = ({ products, onSelect, placeholder = "Search products..
     setIsOpen(false)
     setSearchTerm('')
     onSelect(product)
-  }
-
-  const handleAddProduct = () => {
-    navigate('/add-product')
   }
 
   return (
@@ -68,7 +56,7 @@ const SearchableSelect = ({ products, onSelect, placeholder = "Search products..
               autoFocus
             />
           </div>
-          
+
           <div className="max-h-60 overflow-y-auto">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product) => (
@@ -101,7 +89,7 @@ const SearchableSelect = ({ products, onSelect, placeholder = "Search products..
             <Button
               variant="ghost"
               className="w-full justify-start gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-              onClick={handleAddProduct}
+              onClick={() => {}}
             >
               <Plus className="w-4 h-4" />
               Add Product
@@ -114,126 +102,200 @@ const SearchableSelect = ({ products, onSelect, placeholder = "Search products..
 }
 
 const AddStock = () => {
-    const location = useLocation()
-    const [ setSelectedProduct] = useState(null)
+  const location = useLocation()
+  const [products, setProducts] = useState([])
+  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [quantity, setQuantity] = useState('')
+  const [purchasePrice, setPurchasePrice] = useState('')
+  const [sellingPrice, setSellingPrice] = useState('')
+  const [vendor, setVendor] = useState('')
+  const [receiveDate, setReceiveDate] = useState('')
+  const [changePrice, setChangePrice] = useState(false)
 
-    // Split the pathname and filter out empty strings
-    const pathnames = location.pathname.split('/').filter((x) => x)
+  const pathnames = location.pathname.split('/').filter((x) => x)
 
-    const handleProductSelect = (product) => {
-        setSelectedProduct(product)
-        console.log('Selected product:', product)
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const data = await fetchProducts()
+        setProducts(data)
+      } catch (err) {
+        console.error('Failed to fetch products:', err)
+      }
+    }
+    loadProducts()
+  }, [])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!selectedProduct) return toast.error('Select a product first.')
+
+    const payload = {
+      quantity,
+      vendor,
+      receiveDate,
+      ...(changePrice ? { purchasePrice, sellingPrice } : {})
     }
 
-    return (
-        <div className='bg-white shadow-md p-4'>
-            <div className='mb-[20px]'>
-                {/* Breadcrumbs */}
-                <nav className='text-gray-500 text-sm mb-2'>
-                    {pathnames.length > 0 ? (
-                        <ol className='list-none p-0 inline-flex'>
-                            <li>
-                                <Link to='/' className='hover:text-gray-700'>
-                                    Home
-                                </Link>
-                            </li>
-                            {pathnames.map((name, index) => {
-                                const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`
-                                const isLast = index === pathnames.length - 1
-                                return (
-                                    <li key={routeTo} className='flex items-center'>
-                                        <span className='mx-2'>›</span>
-                                        {isLast ? (
-                                            <span className='text-gray-700'>{name.replace('-', ' ')}</span>
-                                        ) : (
-                                            <Link to={routeTo} className='hover:text-gray-700'>
-                                                {name.replace('-', ' ')}
-                                            </Link>
-                                        )}
-                                    </li>
-                                )
-                            })}
-                        </ol>
+    try {
+      await addStock(selectedProduct.id, payload)
+      toast.success('Stock added successfully!')
+      // Reset form
+      setSelectedProduct(null)
+      setQuantity('')
+      setPurchasePrice('')
+      setSellingPrice('')
+      setVendor('')
+      setReceiveDate('')
+      setChangePrice(false)
+    } catch (err) {
+      console.error(err)
+      toast.error('Failed to add stock.')
+    }
+  }
+
+  return (
+    <div className='bg-white shadow-md p-4'>
+      <div className='mb-[20px]'>
+        <nav className='text-gray-500 text-sm mb-2'>
+          {pathnames.length > 0 ? (
+            <ol className='list-none p-0 inline-flex'>
+              <li>
+                <Link to='/' className='hover:text-gray-700'>Home</Link>
+              </li>
+              {pathnames.map((name, index) => {
+                const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`
+                const isLast = index === pathnames.length - 1
+                return (
+                  <li key={routeTo} className='flex items-center'>
+                    <span className='mx-2'>›</span>
+                    {isLast ? (
+                      <span className='text-gray-700'>{name.replace('-', ' ')}</span>
                     ) : (
-                        <span>Home</span>
+                      <Link to={routeTo} className='hover:text-gray-700'>
+                        {name.replace('-', ' ')}
+                      </Link>
                     )}
-                </nav>
-                <h1 className='font-bold text-xl'>
-                    Add Stock
-                </h1>
-            </div>
-            <div className='p-4'>
-                <form action="" className='w-full grid grid-cols-2 gap-4'>
-                    <div className="space-y-2">
-                        <label htmlFor="product" className="text-sm font-medium text-gray-700">
-                            Product Name
-                        </label>
-                        <SearchableSelect
-                            products={products}
-                            onSelect={handleProductSelect}
-                            placeholder="Search and select a product..."
-                        />
-                    </div>
-                    
-                    {/* Add other form fields here */}
-                    <div className="space-y-2">
-                        <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
-                            Quantity
-                        </label>
-                        <Input
-                            type="number"
-                            id="quantity"
-                            placeholder="Enter quantity"
-                            className="w-full outline-none border border-gray-300"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
-                            Purchase Price
-                        </label>
-                        <Input
-                            type="number"
-                            id="purchasePrice"
-                            placeholder="Enter quantity"
-                            className="w-full outline-none border border-gray-300"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
-                            Selling Price
-                        </label>
-                        <Input
-                            type="number"
-                            id="sellingPrice"
-                            placeholder="Enter quantity"
-                            className="w-full outline-none border border-gray-300"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
-                            Date Received
-                        </label>
-                        <Input
-                            type="date"
-                            id="receivedDate"
-                            placeholder="Enter quantity"
-                            className="w-full border border-gray-300"
-                        />
-                    </div>
-                    
-                    <div className='flex items-center gap-2'>
-                        <Button className='bg-black text-white cursor-pointer'>
-                            {/* <Loader2Icon className="animate-spin" /> */}
-                            Submit
-                        </Button>
-                        <Button variant="outline" className='cursor-pointer'>
-                            Reset Form
-                        </Button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    )
+                  </li>
+                )
+              })}
+            </ol>
+          ) : (
+            <span>Home</span>
+          )}
+        </nav>
+        <h1 className='font-bold text-xl'>Add Stock</h1>
+      </div>
+
+      <div className='p-4'>
+        <form onSubmit={handleSubmit} className='w-full grid grid-cols-2 gap-4'>
+          <div className="space-y-2">
+            <label htmlFor="product" className="text-sm font-medium text-gray-700">Product Name</label>
+            <SearchableSelect
+              products={products}
+              onSelect={setSelectedProduct}
+              placeholder="Search and select a product..."
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="quantity" className="text-sm font-medium text-gray-700">Quantity</label>
+            <Input
+              type="number"
+              id="quantity"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              placeholder="Enter quantity"
+              className="w-full outline-none border border-gray-300"
+            />
+          </div>
+
+          <div className="space-y-2 flex items-center gap-2 col-span-2">
+            <input
+              type="checkbox"
+              id="changePrice"
+              checked={changePrice}
+              onChange={(e) => setChangePrice(e.target.checked)}
+            />
+            <label htmlFor="changePrice" className="text-sm font-medium text-gray-700">
+              Change Product Price
+            </label>
+          </div>
+
+          {changePrice && (
+            <>
+              <div className="space-y-2">
+                <label htmlFor="purchasePrice" className="text-sm font-medium text-gray-700">Purchase Price</label>
+                <Input
+                  type="number"
+                  id="purchasePrice"
+                  value={purchasePrice}
+                  onChange={(e) => setPurchasePrice(e.target.value)}
+                  placeholder="Enter purchase price"
+                  className="w-full outline-none border border-gray-300"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="sellingPrice" className="text-sm font-medium text-gray-700">Selling Price</label>
+                <Input
+                  type="number"
+                  id="sellingPrice"
+                  value={sellingPrice}
+                  onChange={(e) => setSellingPrice(e.target.value)}
+                  placeholder="Enter selling price"
+                  className="w-full outline-none border border-gray-300"
+                />
+              </div>
+            </>
+          )}
+
+          <div className="space-y-2">
+            <label htmlFor="vendor" className="text-sm font-medium text-gray-700">Vendor</label>
+            <Input
+              type="text"
+              id="vendor"
+              value={vendor}
+              onChange={(e) => setVendor(e.target.value)}
+              placeholder="Enter vendor"
+              className="w-full outline-none border border-gray-300"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="receiveDate" className="text-sm font-medium text-gray-700">Date Received</label>
+            <Input
+              type="date"
+              id="receiveDate"
+              value={receiveDate}
+              onChange={(e) => setReceiveDate(e.target.value)}
+              className="w-full border border-gray-300"
+            />
+          </div>
+
+          <div className='flex items-center gap-2 col-span-2'>
+            <Button type="submit" className='bg-black text-white cursor-pointer'>Submit</Button>
+            <Button
+              variant="outline"
+              type="button"
+              className='cursor-pointer'
+              onClick={() => {
+                setSelectedProduct(null)
+                setQuantity('')
+                setPurchasePrice('')
+                setSellingPrice('')
+                setVendor('')
+                setReceiveDate('')
+                setChangePrice(false)
+              }}
+            >
+              Reset Form
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
 }
 
 export default AddStock

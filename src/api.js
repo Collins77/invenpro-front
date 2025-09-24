@@ -7,12 +7,20 @@ export const fetchProducts = async () => {
 };
 
 export const createProduct = async (productData) => {
-    const response = await fetch(`${API_URL}/products`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productData),
-    });
-    return response.json();
+  const res = await fetch(`${API_URL}/products`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(productData)
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    // Your backend sends { error: 'Server error' }
+    throw new Error(data.error || 'Something went wrong');
+  }
+
+  return data; // This will be the created product object
 };
 
 export const updateProduct = async (id, productData) => {
