@@ -6,6 +6,7 @@ import Products from "./pages/Products"
 import OutStockProducts from "./pages/OutStockProducts"
 import AddProduct from "./pages/AddProduct"
 import { Toaster } from "sonner"
+import Pos from "./pages/Pos"
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
           <Route path="out-of-stock" element={<OutStockProducts />} />   
           <Route path="add-product" element={<AddProduct />} />   
         </Route>
+        <Route path="/pos" element={<Pos />} />
       </Routes>
       <Toaster />
     </>

@@ -47,3 +47,19 @@ export const addStock = async (id, stockData) => {
     });
     return response.json();
 };
+
+export const createSale = async (saleData) => {
+  const res = await fetch(`${API_URL}/sales`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(saleData),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to create sale');
+  }
+
+  return data; // This will be the created sale object
+};

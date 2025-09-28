@@ -70,7 +70,7 @@ const DashLayout = () => {
             <h1 className="text-sm text-black">Sales</h1>
             <ul>
               <li>
-                <a href="/" className="flex items-center gap-2 text-sm text-gray-500 hover:bg-green-100 rounded-md p-2">
+                <a href="/pos" className="flex items-center gap-2 text-sm text-gray-500 hover:bg-green-100 rounded-md p-2">
                   <BadgePercent />
                   POS
                 </a>
