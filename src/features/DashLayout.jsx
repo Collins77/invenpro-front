@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { AudioWaveform, BadgePercent, Bell, Blocks, ChartArea, ChevronsDownUp, ClipboardList, CreditCard, LayoutDashboard, List, LogOut, Plus, ScanBarcode, ShoppingBag, SidebarIcon, User, UserPlus, Users, Verified } from "lucide-react";
+import { AudioWaveform, BadgePercent, Bell, Blocks, ChartArea, ChevronsDownUp, ClipboardList, Codepen, CreditCard, LayoutDashboard, List, LogOut, Plus, ScanBarcode, ShoppingBag, SidebarIcon, User, UserPlus, Users, Verified } from "lucide-react";
 import { Outlet } from "react-router-dom";
 
 const DashLayout = () => {
@@ -84,7 +84,7 @@ const DashLayout = () => {
               <li>
                 <a href="/dashboard/reports" className="flex items-center gap-2 text-sm text-gray-500 hover:bg-green-100 rounded-md p-2">
                   <ChartArea />
-                  Reports
+                  Analytics
                 </a>
               </li>
             </ul>
@@ -110,17 +110,23 @@ const DashLayout = () => {
             <h1 className="text-sm text-black">Settings</h1>
             <ul>
               <li>
-                <a href="/" className="flex items-center gap-2 text-sm text-gray-500 hover:bg-green-100 rounded-md p-2">
+                <a href="/dashboard/categories" className="flex items-center gap-2 text-sm text-gray-500 hover:bg-green-100 rounded-md p-2">
                   <List />
                   Categories
                 </a>
               </li>
               <li>
+                <a href="/dashboard/brands" className="flex items-center gap-2 text-sm text-gray-500 hover:bg-green-100 rounded-md p-2">
+                  <Codepen />
+                  Brands
+                </a>
+              </li>
+              {/* <li>
                 <a href="/" className="flex items-center gap-2 text-sm text-gray-500 hover:bg-green-100 rounded-md p-2">
                   <AudioWaveform />
                   System Logs
                 </a>
-              </li>
+              </li> */}
             </ul>
           </div>
         </div>

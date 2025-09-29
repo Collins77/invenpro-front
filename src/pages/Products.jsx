@@ -38,10 +38,8 @@ import {
     ChevronRight,
     Eye
 } from 'lucide-react'
-import { fetchProducts, addStock as addStockAPI, deleteProduct as deleteProductAPI } from '../api'
+import { fetchProducts, addStock as addStockAPI, deleteProduct as deleteProductAPI, fetchBrands, fetchCategories } from '../api'
 
-
-// Sample products data
 
 // Add Stock Modal Component
 const AddStockModal = ({ product, isOpen, onClose, onSubmit }) => {
@@ -154,13 +152,32 @@ const Products = () => {
     const [filteredProducts, setFilteredProducts] = useState([])
     const [searchTerm, setSearchTerm] = useState('')
     const [categoryFilter, setCategoryFilter] = useState('all')
-    const [statusFilter, setStatusFilter] = useState('all')
+    const [brandFilter, setBrandFilter] = useState('all')
     const [selectedProducts, setSelectedProducts] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage] = useState(5)
     const [stockModalOpen, setStockModalOpen] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState(null)
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+
+    const [brands, setBrands] = useState([]);
+    const [categories, setCategories] = useState([]);
+
+    // Fetch products, brands, and categories
+    const fetchAllData = async () => {
+        const productsData = await fetchProducts();
+        const brandsData = await fetchBrands(); // fetchBrands() should return [{id, name}, ...]
+        const categoriesData = await fetchCategories(); // fetchCategories() should return [{id, name}, ...]
+
+        setProducts(productsData);
+        setFilteredProducts(productsData);
+        setBrands(brandsData);
+        setCategories(categoriesData);
+    }
+
+    useEffect(() => {
+        fetchAllData();
+    }, []);
 
     // Split the pathname and filter out empty strings
     const pathnames = location.pathname.split('/').filter((x) => x)
@@ -174,8 +191,6 @@ const Products = () => {
         fetchAllProducts()
     }, [])
 
-    const categories = [...new Set(products.map(p => p.category))]
-    const statuses = [...new Set(products.map(p => p.status))]
 
     useEffect(() => {
         let filtered = products
@@ -189,15 +204,15 @@ const Products = () => {
         }
 
         if (categoryFilter !== 'all') {
-            filtered = filtered.filter(product => product.category === categoryFilter)
+            filtered = filtered.filter(product => product.brand === categoryFilter)
         }
 
-        if (statusFilter !== 'all') {
-            filtered = filtered.filter(product => product.status === statusFilter)
+        if (brandFilter !== 'all') {
+            filtered = filtered.filter(product => product.brand === brandFilter)
         }
 
         setFilteredProducts(filtered)
-    }, [searchTerm, categoryFilter, statusFilter, products])
+    }, [searchTerm, categoryFilter, brandFilter, products])
 
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
     const startIndex = (currentPage - 1) * itemsPerPage
@@ -254,7 +269,7 @@ const Products = () => {
 
     useEffect(() => {
         setCurrentPage(1)
-    }, [searchTerm, categoryFilter, statusFilter])
+    }, [searchTerm, categoryFilter, brandFilter])
 
     return (
         <div className='bg-white shadow-md p-4'>
@@ -324,20 +339,24 @@ const Products = () => {
                             <SelectValue placeholder="Category" />
                         </SelectTrigger>
                         <SelectContent className='bg-white'>
-                            <SelectItem value="all">All Categories</SelectItem>
+                            <SelectItem key="all" value="all">All Categories</SelectItem>
                             {categories.map(category => (
-                                <SelectItem key={category} value={category}>{category}</SelectItem>
+                                <SelectItem key={category.id} value={category.id}>
+                                    {category.name}
+                                </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <Select value={brandFilter} onValueChange={setBrandFilter}>
                         <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Status" />
+                            <SelectValue placeholder="Brands" />
                         </SelectTrigger>
                         <SelectContent className='bg-white'>
-                            <SelectItem value="all">All Status</SelectItem>
-                            {statuses.map(status => (
-                                <SelectItem key={status} value={status}>{status}</SelectItem>
+                            <SelectItem key="all" value="all">All Brands</SelectItem>
+                            {brands.map(brand => (
+                                <SelectItem key={brand.id} value={brand.id}>
+                                    {brand.name}
+                                </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -380,8 +399,12 @@ const Products = () => {
                                                 <div className="text-sm text-gray-500">{product.volume}</div>
                                             </div>
                                         </td>
-                                        <td className="p-4 text-gray-700">{product.category}</td>
-                                        <td className="p-4 text-gray-700">{product.brand}</td>
+                                        <td className="p-4 text-gray-700">
+                                            {categories.find(c => c.id === product.categoryId)?.name || 'Unknown'}
+                                        </td>
+                                        <td className="p-4 text-gray-700">
+                                            {brands.find(b => b.id === product.brandId)?.name || 'Unknown'}
+                                        </td>
                                         <td className="p-4 text-gray-700">{product.sellingPrice.toLocaleString()}</td>
                                         <td className="p-4">
                                             <div className="flex items-center gap-1">
