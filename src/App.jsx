@@ -8,6 +8,7 @@ import AddProduct from "./pages/AddProduct"
 import { Toaster } from "sonner"
 import Pos from "./pages/Pos"
 import EditProduct from "./pages/EditProduct"
+import Sales from "./pages/Sales"
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
           <Route index element={<Home />} />   
           <Route path="add-stock" element={<AddStock />} />   
           <Route path="products" element={<Products />} />   
+          <Route path="sales" element={<Sales />} />   
           <Route path="out-of-stock" element={<OutStockProducts />} />   
           <Route path="add-product" element={<AddProduct />} />  
           <Route path="products/edit/:id" element={<EditProduct />} /> 
