@@ -1,11 +1,34 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AudioWaveform, BadgePercent, Bell, Blocks, ChartArea, ChevronsDownUp, ClipboardList, Codepen, CreditCard, LayoutDashboard, List, LogOut, Plus, ScanBarcode, ShoppingBag, SidebarIcon, User, UserPlus, Users, Verified } from "lucide-react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../api";
 
 const DashLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true); // desktop
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false); // mobile
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const data = await getCurrentUser();
+        setUser(data);
+      } catch (err) {
+        console.error(err);
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
+    };
+    loadUser();
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
 
 
   // function to handle sidebar toggle from header icon
@@ -131,15 +154,12 @@ const DashLayout = () => {
           </div>
         </div>
         {/* Name and Profile */}
-        <div className="border-t border-gray-200 bg-white p-3 flex items-center justify-between">
+        <div className="border-t border-gray-200 bg-white p-3 ">
           <div>
-            <h1 className="font-bold text-sm">Collins Muema</h1>
-            <p className="text-sm text-gray-500">admin@invenpro.com</p>
+            <h1 className="font-bold text-sm">{user?.firstName} {user?.lastName}</h1>
+            <p className="text-sm text-gray-500">{user?.email}</p>
           </div>
-          <div className="flex gap-2 items-center">
-            <Bell className="text-gray-500" size={20} />
-            <User className="text-gray-500" size={20} />
-          </div>
+          
         </div>
       </div>
 
@@ -181,8 +201,8 @@ const DashLayout = () => {
                 <User />
               </div>
               <div className="flex flex-col">
-                <h1 className="font-bold text-sm">Collins Muema</h1>
-                <p className="text-gray-500 text-sm">admin@invenpro.com</p>
+                <h1 className="font-bold text-sm">{user?.firstName} {user?.lastName}</h1>
+                <p className="text-gray-500 text-sm">{user?.email}</p>
               </div>
               <ChevronsDownUp className="text-gray-500" size={20} />
             </div>
@@ -197,11 +217,11 @@ const DashLayout = () => {
                     <User />
                   </div>
                   <div className="flex flex-col">
-                    <h1 className="font-bold text-[12px]">Collins Muema</h1>
-                    <p className="text-gray-500 text-[10px]">admin@invenpro.com</p>
+                    <h1 className="font-bold text-[12px]">{user?.firstName} {user?.lastName}</h1>
+                    <p className="text-gray-500 text-[10px]">{user?.email}</p>
                   </div>
                 </div>
-                <ul className="flex flex-col p-2 gap-2 border-b border-gray-200">
+                {/* <ul className="flex flex-col p-2 gap-2 border-b border-gray-200">
                   <li className="hover:bg-gray-100 rounded cursor-pointer">
                     <a href=""  className="text-gray-500 text-sm flex items-center gap-1">
                       <Verified size={20} />
@@ -220,8 +240,8 @@ const DashLayout = () => {
                       Notifications
                     </a>
                   </li>   
-                </ul>
-                <button className="p-2 flex items-center gap-1 text-sm text-gray-500 cursor-pointer">
+                </ul> */}
+                <button onClick={handleLogout} className="p-2 flex items-center gap-1 text-sm text-gray-500 cursor-pointer">
                   <LogOut size={20} />
                   Log Out
                 </button>

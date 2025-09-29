@@ -455,7 +455,7 @@ const Products = () => {
                     </div>
 
                     {/* Pagination */}
-                    {totalPages > 1 && (
+                    {totalPages < 6 && (
                         <div className="flex items-center justify-between p-4 border-t">
                             <div className="text-sm text-gray-500">
                                 Showing {startIndex + 1} to {Math.min(endIndex, filteredProducts.length)} of {filteredProducts.length} products

@@ -13,28 +13,37 @@ import SalePage from "./pages/SalePage"
 import Categories from "./pages/Categories"
 import Brands from "./pages/Brands"
 import Reports from "./pages/Reports"
+import Login from "./pages/Login"
+import ProtectedRoute from "./features/ProtectedRoute"
 
 function App() {
 
   return (
     <>
       <Routes>
-        {/* <Route path="" element={<Login />} /> */}
-        {/* <Route path="" element={<SignUp />} /> */}
-        <Route path="dashboard" element={<DashLayout />} >
-          <Route index element={<Home />} />   
-          <Route path="add-stock" element={<AddStock />} />   
-          <Route path="products" element={<Products />} />   
-          <Route path="sales" element={<Sales />} />   
-          <Route path="categories" element={<Categories />} />   
-          <Route path="reports" element={<Reports />} />   
-          <Route path="brands" element={<Brands />} />   
-          <Route path="sales/:id" element={<SalePage />} />   
-          <Route path="out-of-stock" element={<OutStockProducts />} />   
-          <Route path="add-product" element={<AddProduct />} />  
-          <Route path="products/edit/:id" element={<EditProduct />} /> 
+        <Route path="dashboard" element={
+          <ProtectedRoute>
+            <DashLayout />
+          </ProtectedRoute>
+        } >
+          <Route index element={<Home />} />
+          <Route path="add-stock" element={<AddStock />} />
+          <Route path="products" element={<Products />} />
+          <Route path="sales" element={<Sales />} />
+          <Route path="categories" element={<Categories />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="brands" element={<Brands />} />
+          <Route path="sales/:id" element={<SalePage />} />
+          <Route path="out-of-stock" element={<OutStockProducts />} />
+          <Route path="add-product" element={<AddProduct />} />
+          <Route path="products/edit/:id" element={<EditProduct />} />
         </Route>
-        <Route path="/pos" element={<Pos />} />
+        <Route path="/pos" element={
+          <ProtectedRoute>
+            <Pos />
+          </ProtectedRoute>}
+        />
+        <Route path="/login" element={<Login />} />
       </Routes>
       <Toaster />
     </>

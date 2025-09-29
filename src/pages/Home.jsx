@@ -16,6 +16,24 @@ const Home = () => {
   const [products, setProducts] = useState([])
   const [sales, setSales] = useState([])
   const [loading, setLoading] = useState(true)
+  const [topProducts, setTopProducts] = useState([])
+
+  useEffect(() => {
+    if (!sales.length) return
+
+    const productMap = {}
+    sales.forEach(sale => {
+      sale.items.forEach(item => {
+        productMap[item.Product.name] = (productMap[item.Product.name] || 0) + item.quantity
+      })
+    })
+
+    const top = Object.entries(productMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+
+    setTopProducts(top)
+  }, [sales])
 
   useEffect(() => {
     const date = new Date()
@@ -45,8 +63,8 @@ const Home = () => {
     const today = new Date()
     const sale = new Date(saleDate)
     return sale.getFullYear() === today.getFullYear() &&
-           sale.getMonth() === today.getMonth() &&
-           sale.getDate() === today.getDate()
+      sale.getMonth() === today.getMonth() &&
+      sale.getDate() === today.getDate()
   }
 
   // Inventory Value
@@ -66,6 +84,8 @@ const Home = () => {
       return itemSum + (item.sellingPrice - item.Product.purchasePrice) * item.quantity
     }, 0)
   }, 0)
+
+  
 
   return (
     <div className='bg-white shadow-md p-4'>
@@ -163,7 +183,7 @@ const Home = () => {
         <div className='w-[45%] bg-white rounded-md p-2 shadow-md'>
           <div className='flex items-center justify-between mb-6'>
             <h1 className='font-semibold'>Top Selling Products</h1>
-            <a href="/dashboard/out-of-stock" className='text-blue-600 underline text-sm gap-2 flex items-center'>
+            <a href="/dashboard/analytics" className='text-blue-600 underline text-sm gap-2 flex items-center'>
               View Details <ChevronRight />
             </a>
           </div>
@@ -177,16 +197,14 @@ const Home = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products
-                .sort((a, b) => b.totalSold - a.totalSold) // top selling
-                .slice(0, 4)
+              {topProducts
                 .map(p => (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.name}</TableCell>
                     <TableCell className='text-gray-500'>{p.stock}</TableCell>
                     {/* <TableCell className='text-gray-500'>{p.minStock}</TableCell> */}
                   </TableRow>
-              ))}
+                ))}
             </TableBody>
           </Table>
         </div>
