@@ -113,7 +113,7 @@ const Pos = () => {
                     <button onClick={() => navigate('/dashboard')} className='px-4 py-2 border border-gray-200 rounded-md hover:bg-black hover:text-white flex gap-2 duration-300 transition-all cursor-pointer'>
                         <ArrowLeft /> Back to Dashboard
                     </button>
-                    <h1 className="font-bold text-2xl">Billiard's Place</h1>
+                    <h1 className="font-bold text-2xl">Billiards Chillzone</h1>
                 </div>
                 <div className="relative flex gap-2 items-center cursor-pointer">
                     <div className="w-[40px] h-[40px] bg-gray-200 flex items-center justify-center rounded-full"><User /></div>
@@ -203,7 +203,7 @@ const Pos = () => {
                     {/* Cart Items */}
                     <div
                         className="overflow-y-auto px-2 py-1"
-                        style={{ maxHeight: '300px', height: '300px' }} // <-- set the max height here
+                        style={{ maxHeight: '300px', height: '250px' }} // <-- set the max height here
                     >
                         {cart.map(item => (
                             <div key={item.productId} className='w-full bg-white flex flex-col gap-1 p-3 border-b border-gray-200 h-[90px]'>

@@ -15,21 +15,10 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
 import {
     FolderDown,
-    Plus,
-    Search,
     MoreHorizontal,
     Edit,
     Package,
@@ -38,239 +27,104 @@ import {
     ChevronRight,
     Eye
 } from 'lucide-react'
+import { fetchProducts, addStock, deleteProduct as apiDeleteProduct } from '@/api'
+import { toast } from 'sonner'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 
-// Sample products data
-const productsData = [
-    {
-        id: 1,
-        name: 'Tusker Lager',
-        category: 'Beer',
-        brand: 'EABL',
-        price: 350.00,
-        stock: 0,
-        status: 'Out of Stock',
-        dateAdded: '2025-01-15',
-        lastStocked: '2025-09-20',
-        minStock: 3,
-        description: '500ML Bottle'
-    },
-    {
-        id: 2,
-        name: 'Coca-Cola',
-        category: 'Soft Drinks',
-        brand: 'Coca-Cola',
-        price: 120.00,
-        stock: 0,
-        status: 'Out of Stock',
-        dateAdded: '2025-01-10',
-        lastStocked: '2025-09-15',
-        minStock: 3,
-        description: '330ML Can'
-    },
-    {
-        id: 3,
-        name: 'Johnnie Walker Black',
-        category: 'Spirits',
-        brand: 'Diageo',
-        price: 3500.00,
-        stock: 0,
-        status: 'Out of Stock',
-        dateAdded: '2025-02-01',
-        lastStocked: '2025-09-18',
-        minStock: 3,
-        description: '750ML Bottle'
-    },
-    {
-        id: 4,
-        name: 'Heineken',
-        category: 'Beer',
-        brand: 'Heineken',
-        price: 280.00,
-        stock: 0,
-        status: 'Out of Stock',
-        dateAdded: '2025-01-20',
-        lastStocked: '2025-09-19',
-        minStock: 3,
-        description: '500ML Bottle'
-    },
-    {
-        id: 5,
-        name: 'Jack Daniels',
-        category: 'Spirits',
-        brand: 'Jack Daniels',
-        price: 4200.00,
-        stock: 0,
-        status: 'Out of Stock',
-        dateAdded: '2025-02-10',
-        lastStocked: '2025-09-17',
-        minStock: 3,
-        description: '750ML Bottle'
-    },
-    {
-        id: 6,
-        name: 'Sprite',
-        category: 'Soft Drinks',
-        brand: 'Coca-Cola',
-        price: 120.00,
-        stock: 0,
-        status: 'Out of Stock',
-        dateAdded: '2025-01-12',
-        lastStocked: '2025-09-21',
-        minStock: 3,
-        description: '330ML Can'
-    },
-    {
-        id: 7,
-        name: 'Sprite',
-        category: 'Soft Drinks',
-        brand: 'Coca-Cola',
-        price: 120.00,
-        stock: 0,
-        status: 'Out of Stock',
-        dateAdded: '2025-01-12',
-        lastStocked: '2025-09-21',
-        minStock: 3,
-        description: '330ML Can'
-    },
-    {
-        id: 8,
-        name: 'Sprite',
-        category: 'Soft Drinks',
-        brand: 'Coca-Cola',
-        price: 120.00,
-        stock: 0,
-        status: 'Out of Stock',
-        dateAdded: '2025-01-12',
-        lastStocked: '2025-09-21',
-        minStock: 3,
-        description: '330ML Can'
-    },
-    {
-        id: 9,
-        name: 'Sprite',
-        category: 'Soft Drinks',
-        brand: 'Coca-Cola',
-        price: 120.00,
-        stock: 0,
-        status: 'Out of Stock',
-        dateAdded: '2025-01-12',
-        lastStocked: '2025-09-21',
-        minStock: 3,
-        description: '330ML Can'
-    },
-    {
-        id: 10,
-        name: 'Sprite',
-        category: 'Soft Drinks',
-        brand: 'Coca-Cola',
-        price: 120.00,
-        stock: 0,
-        status: 'Out of Stock',
-        dateAdded: '2025-01-12',
-        lastStocked: '2025-09-21',
-        minStock: 3,
-        description: '330ML Can'
-    }
-]
-
-// Add Stock Modal Component
+// Add Stock Modal component
 const AddStockModal = ({ product, isOpen, onClose, onSubmit }) => {
-    const [stockData, setStockData] = useState({
-        quantity: '',
-        unitCost: '',
-        supplier: '',
-        expiryDate: '',
-        batchNumber: '',
-        notes: ''
-    })
+    const [quantity, setQuantity] = useState('')
+    const [purchasePrice, setPurchasePrice] = useState('')
+    const [sellingPrice, setSellingPrice] = useState('')
+    const [vendor, setVendor] = useState('')
+    const [receiveDate, setReceiveDate] = useState('')
+    const [changePrice, setChangePrice] = useState(false)
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        onSubmit({ ...stockData, productId: product?.id })
-        setStockData({
-            quantity: '',
-            unitCost: '',
-            supplier: '',
-            expiryDate: '',
-            batchNumber: '',
-            notes: ''
-        })
-        onClose()
-    }
+        if (!product) return toast.error('No product selected.')
 
-    if (!product) return null
+        const payload = {
+            quantity,
+            vendor,
+            receiveDate,
+            ...(changePrice ? { purchasePrice, sellingPrice } : {})
+        }
+
+        try {
+            await addStock(product.id, payload)
+            toast.success('Stock added successfully!')
+            if (onSubmit) {
+                onSubmit({ productId: product.id, ...payload }) // <-- include productId
+            }
+            // Reset form
+            setQuantity('')
+            setPurchasePrice('')
+            setSellingPrice('')
+            setVendor('')
+            setReceiveDate('')
+            setChangePrice(false)
+            onClose()
+        } catch (err) {
+            console.error(err)
+            toast.error('Failed to add stock.')
+        }
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[425px] bg-white">
+            <DialogContent className="sm:max-w-[500px] bg-white">
                 <DialogHeader>
-                    <DialogTitle>Add Stock - {product.name}</DialogTitle>
-                    <DialogDescription>
-                        Add new stock for this product. Current stock: {product.stock} units
-                    </DialogDescription>
+                    <DialogTitle>Add Stock - {product?.name}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-sm font-medium">Quantity *</label>
-                            <Input
-                                type="number"
-                                value={stockData.quantity}
-                                onChange={(e) => setStockData({ ...stockData, quantity: e.target.value })}
-                                placeholder="Enter quantity"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="text-sm font-medium">Unit Cost (KES)</label>
-                            <Input
-                                type="number"
-                                step="0.01"
-                                value={stockData.unitCost}
-                                onChange={(e) => setStockData({ ...stockData, unitCost: e.target.value })}
-                                placeholder="0.00"
-                            />
-                        </div>
-                    </div>
                     <div>
-                        <label className="text-sm font-medium">Supplier</label>
+                        <label className="text-sm font-medium">Product</label>
+                        <Input type="text" value={product?.name || ''} disabled className="bg-gray-100 cursor-not-allowed" />
+                    </div>
+
+                    <div>
+                        <label className="text-sm font-medium">Quantity *</label>
                         <Input
-                            value={stockData.supplier}
-                            onChange={(e) => setStockData({ ...stockData, supplier: e.target.value })}
-                            placeholder="Supplier name"
+                            type="number"
+                            value={quantity}
+                            onChange={(e) => setQuantity(e.target.value)}
+                            placeholder="Enter quantity"
+                            required
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-sm font-medium">Expiry Date</label>
-                            <Input
-                                type="date"
-                                value={stockData.expiryDate}
-                                onChange={(e) => setStockData({ ...stockData, expiryDate: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="text-sm font-medium">Batch Number</label>
-                            <Input
-                                value={stockData.batchNumber}
-                                onChange={(e) => setStockData({ ...stockData, batchNumber: e.target.value })}
-                                placeholder="Batch #"
-                            />
-                        </div>
+
+                    <div className="flex items-center gap-2">
+                        <input type="checkbox" checked={changePrice} onChange={(e) => setChangePrice(e.target.checked)} />
+                        <label className="text-sm font-medium">Change Product Price</label>
                     </div>
+
+                    {changePrice && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="text-sm font-medium">Purchase Price</label>
+                                <Input type="number" value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium">Selling Price</label>
+                                <Input type="number" value={sellingPrice} onChange={(e) => setSellingPrice(e.target.value)} />
+                            </div>
+                        </div>
+                    )}
+
                     <div>
-                        <label className="text-sm font-medium">Notes</label>
-                        <Input
-                            value={stockData.notes}
-                            onChange={(e) => setStockData({ ...stockData, notes: e.target.value })}
-                            placeholder="Additional notes..."
-                        />
+                        <label className="text-sm font-medium">Vendor</label>
+                        <Input type="text" value={vendor} onChange={(e) => setVendor(e.target.value)} placeholder="Enter vendor" />
                     </div>
-                    <DialogFooter>
-                        <Button type="button" variant="outline" className='cursor-pointer' onClick={onClose}>
-                            Cancel
-                        </Button>
-                        <Button type="submit" className='bg-black text-white cursor-pointer'>Add Stock</Button>
+
+                    <div>
+                        <label className="text-sm font-medium">Date Received</label>
+                        <Input type="date" value={receiveDate} onChange={(e) => setReceiveDate(e.target.value)} />
+                    </div>
+
+                    <DialogFooter className="flex justify-end gap-2">
+                        <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+                        <Button type="submit" className="bg-black text-white">Add Stock</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
@@ -280,341 +134,224 @@ const AddStockModal = ({ product, isOpen, onClose, onSubmit }) => {
 
 const OutStockProducts = () => {
     const location = useLocation()
-    const [products, setProducts] = useState(productsData)
-    const [filteredProducts, setFilteredProducts] = useState(productsData)
+    const [products, setProducts] = useState([])
+    const [filteredProducts, setFilteredProducts] = useState([])
     const [searchTerm, setSearchTerm] = useState('')
     const [categoryFilter, setCategoryFilter] = useState('all')
-    const [statusFilter, setStatusFilter] = useState('all')
     const [selectedProducts, setSelectedProducts] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage] = useState(5)
     const [stockModalOpen, setStockModalOpen] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState(null)
 
-    // Split the pathname and filter out empty strings
     const pathnames = location.pathname.split('/').filter((x) => x)
 
-    // Get unique categories and statuses for filters
-    const categories = [...new Set(products.map(p => p.category))]
-    const statuses = [...new Set(products.map(p => p.status))]
+    // Fetch products
+    useEffect(() => {
+        const loadProducts = async () => {
+            try {
+                const allProducts = await fetchProducts()
+                const outStock = allProducts.filter(p => p.stock === 0)
+                setProducts(outStock)
+            } catch (err) {
+                console.error('Failed to fetch products:', err)
+            }
+        }
+        loadProducts()
+    }, [])
 
-    // Filter and search logic
+    const categories = [...new Set(products.map(p => p.category))]
+
     useEffect(() => {
         let filtered = products
-
-        // Search filter
         if (searchTerm) {
-            filtered = filtered.filter(product =>
-                product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                product.category.toLowerCase().includes(searchTerm.toLowerCase())
+            filtered = filtered.filter(p =>
+                p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                p.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                p.category.toLowerCase().includes(searchTerm.toLowerCase())
             )
         }
-
-        // Category filter
         if (categoryFilter !== 'all') {
-            filtered = filtered.filter(product => product.category === categoryFilter)
+            filtered = filtered.filter(p => p.category === categoryFilter)
         }
-
-        // Status filter
-        if (statusFilter !== 'all') {
-            filtered = filtered.filter(product => product.status === statusFilter)
-        }
-
         setFilteredProducts(filtered)
-    }, [searchTerm, categoryFilter, statusFilter, products])
+        setCurrentPage(1)
+    }, [searchTerm, categoryFilter, products])
 
-
-    // Pagination logic
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
     const startIndex = (currentPage - 1) * itemsPerPage
     const endIndex = startIndex + itemsPerPage
     const currentProducts = filteredProducts.slice(startIndex, endIndex)
 
-    // Status badge styling
     const getStatusBadge = (status) => {
         const styles = {
             'Active': 'bg-green-100 text-green-700 border-green-200',
             'Out of Stock': 'bg-red-100 text-red-700 border-red-200',
-            'Low Stock': 'bg-yellow-100 text-yellow-700 border-yellow-200',
-            'Inactive': 'bg-gray-100 text-gray-700 border-gray-200'
         }
-        return (
-            <Badge variant="secondary" className={`${styles[status]} border`}>
-                {status}
-            </Badge>
-        )
+        return <Badge variant="secondary" className={`${styles[status]} border`}>{status}</Badge>
     }
 
-    // Handle checkbox selection
     const handleSelectAll = (checked) => {
-        if (checked) {
-            setSelectedProducts(currentProducts.map(p => p.id))
-        } else {
-            setSelectedProducts([])
-        }
+        if (checked) setSelectedProducts(currentProducts.map(p => p.id))
+        else setSelectedProducts([])
+    }
+    const handleSelectProduct = (id, checked) => {
+        if (checked) setSelectedProducts([...selectedProducts, id])
+        else setSelectedProducts(selectedProducts.filter(pid => pid !== id))
     }
 
-    const handleSelectProduct = (productId, checked) => {
-        if (checked) {
-            setSelectedProducts([...selectedProducts, productId])
-        } else {
-            setSelectedProducts(selectedProducts.filter(id => id !== productId))
-        }
-    }
-
-    // Handle add stock
     const handleAddStock = (product) => {
         setSelectedProduct(product)
         setStockModalOpen(true)
     }
 
-    const handleStockSubmit = (stockData) => {
-        // Update product stock
-        setProducts(products.map(p =>
-            p.id === stockData.productId
-                ? { ...p, stock: p.stock + parseInt(stockData.quantity), status: 'Active' }
-                : p
-        ))
-        console.log('Stock added:', stockData)
-    }
-
-    // Handle delete product
-    const handleDeleteProduct = (productId) => {
-        if (window.confirm('Are you sure you want to delete this product?')) {
-            setProducts(products.filter(p => p.id !== productId))
+    const handleStockSubmit = async (stockData) => {
+        try {
+            await addStock(stockData.productId, stockData)
+            setProducts(prev => prev.filter(p => p.id !== stockData.productId))
+            setStockModalOpen(false)
+        } catch (err) {
+            console.error('Error adding stock:', err)
         }
     }
 
-    useEffect(() => {
-        setCurrentPage(1)
-    }, [searchTerm, categoryFilter, statusFilter])
+    const handleDeleteProduct = async (id) => {
+        if (!window.confirm('Delete this product?')) return
+        try {
+            await apiDeleteProduct(id)
+            setProducts(prev => prev.filter(p => p.id !== id))
+        } catch (err) {
+            console.error('Error deleting product:', err)
+        }
+    }
 
     return (
-        <div className='bg-white shadow-md p-4'>
-            <div className='mb-[20px]'>
-                {/* Breadcrumbs */}
-                <nav className='text-gray-500 text-sm mb-2'>
-                    {pathnames.length > 0 ? (
-                        <ol className='list-none p-0 inline-flex'>
-                            <li>
-                                <Link to='/' className='hover:text-gray-700'>
-                                    Home
-                                </Link>
-                            </li>
-                            {pathnames.map((name, index) => {
-                                const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`
-                                const isLast = index === pathnames.length - 1
-                                return (
-                                    <li key={routeTo} className='flex items-center'>
-                                        <span className='mx-2'>›</span>
-                                        {isLast ? (
-                                            <span className='text-gray-700'>{name.replace('-', ' ')}</span>
-                                        ) : (
-                                            <Link to={routeTo} className='hover:text-gray-700'>
-                                                {name.replace('-', ' ')}
-                                            </Link>
-                                        )}
-                                    </li>
-                                )
-                            })}
-                        </ol>
-                    ) : (
-                        <span>Home</span>
-                    )}
-                </nav>
+        <div className="bg-white shadow-md p-4">
+            {/* Breadcrumb */}
+            <nav className='text-gray-500 text-sm mb-2'>
+                {pathnames.length > 0 ? (
+                    <ol className='list-none p-0 inline-flex'>
+                        <li><Link to='/' className='hover:text-gray-700'>Home</Link></li>
+                        {pathnames.map((name, index) => {
+                            const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`
+                            const isLast = index === pathnames.length - 1
+                            return (
+                                <li key={routeTo} className='flex items-center'>
+                                    <span className='mx-2'>›</span>
+                                    {isLast ? <span className='text-gray-700'>{name.replace('-', ' ')}</span> :
+                                        <Link to={routeTo} className='hover:text-gray-700'>{name.replace('-', ' ')}</Link>}
+                                </li>
+                            )
+                        })}
+                    </ol>
+                ) : <span>Home</span>}
+            </nav>
 
-                <div className='flex justify-between items-center py-4 border-b border-gray-200 mb-[20px]'>
-                    <h1 className='font-bold text-xl'>
-                        Out Of Stock Products ({filteredProducts.length})
-                    </h1>
-                    <div className='flex items-center gap-2'>
-                        <Button className='bg-black text-white cursor-pointer'>
-                            <FolderDown className="w-4 h-4 mr-2" />
-                            Download Excel
-                        </Button>
-                        
-                    </div>
-                </div>
-
-                {/* Search and Filters */}
-                <div className='flex flex-wrap gap-4 mb-6'>
-                    <div className='relative flex-1 min-w-[200px]'>
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                            placeholder="Search products..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10"
-                        />
-                    </div>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Category" />
-                        </SelectTrigger>
-                        <SelectContent className='bg-white'>
-                            <SelectItem value="all">All Categories</SelectItem>
-                            {categories.map(category => (
-                                <SelectItem key={category} value={category}>{category}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Status" />
-                        </SelectTrigger>
-                        <SelectContent className='bg-white'>
-                            <SelectItem value="all">All Status</SelectItem>
-                            {statuses.map(status => (
-                                <SelectItem key={status} value={status}>{status}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                {/* Table */}
-                <div className="">
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b bg-gray-50/50">
-                                    <th className="p-4 text-left">
-                                        <Checkbox
-                                            checked={selectedProducts.length === currentProducts.length && currentProducts.length > 0}
-                                            onCheckedChange={handleSelectAll}
-                                        />
-                                    </th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Product Name</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Category</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Brand</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Price (KES)</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Stock</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Status</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Last Stocked</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {currentProducts.map((product) => (
-                                    <tr key={product.id} className="border-b border-gray-200 hover:bg-gray-50/50">
-                                        <td className="p-4">
-                                            <Checkbox
-                                                checked={selectedProducts.includes(product.id)}
-                                                onCheckedChange={(checked) => handleSelectProduct(product.id, checked)}
-                                            />
-                                        </td>
-                                        <td className="p-4">
-                                            <div>
-                                                <div className="font-medium text-gray-900">{product.name}</div>
-                                                <div className="text-sm text-gray-500">{product.description}</div>
-                                            </div>
-                                        </td>
-                                        <td className="p-4 text-gray-700">{product.category}</td>
-                                        <td className="p-4 text-gray-700">{product.brand}</td>
-                                        <td className="p-4 text-gray-700">{product.price.toLocaleString()}</td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-1">
-                                                <span className={`font-medium ${product.stock <= product.minStock ? 'text-red-600' : 'text-gray-900'}`}>
-                                                    {product.stock}
-                                                </span>
-                                                {product.stock <= product.minStock && (
-                                                    <span className="text-xs text-red-500">(Low)</span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="p-4">{getStatusBadge(product.status)}</td>
-                                        <td className="p-4 text-gray-700 text-sm">
-                                            {new Date(product.lastStocked).toLocaleDateString()}
-                                        </td>
-                                        <td className="p-4">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="sm">
-                                                        <MoreHorizontal className="w-4 h-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-48 bg-white">
-                                                    <DropdownMenuItem>
-                                                        <Eye className="w-4 h-4 mr-2" />
-                                                        View Details
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem>
-                                                        <Edit className="w-4 h-4 mr-2" />
-                                                        Edit Product
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleAddStock(product)}>
-                                                        <Package className="w-4 h-4 mr-2" />
-                                                        Add Stock
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleDeleteProduct(product.id)}
-                                                        className="text-red-600 hover:text-red-700"
-                                                    >
-                                                        <Trash2 className="w-4 h-4 mr-2" />
-                                                        Delete Product
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Pagination */}
-                    {totalPages > 1 && (
-                        <div className="flex items-center justify-between p-4 border-t">
-                            <div className="text-sm text-gray-500">
-                                Showing {startIndex + 1} to {Math.min(endIndex, filteredProducts.length)} of {filteredProducts.length} products
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                    disabled={currentPage === 1}
-                                >
-                                    <ChevronLeft className="w-4 h-4 mr-1" />
-                                    Previous
-                                </Button>
-                                <div className="flex items-center space-x-1">
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                        <Button
-                                            key={page}
-                                            variant={currentPage === page ? "default" : "outline"}
-                                            size="sm"
-                                            onClick={() => setCurrentPage(page)}
-                                            className="w-8 h-8 p-0"
-                                        >
-                                            {page}
-                                        </Button>
-                                    ))}
-                                </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                    disabled={currentPage === totalPages}
-                                >
-                                    Next
-                                    <ChevronRight className="w-4 h-4 ml-1" />
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* No results */}
-                    {currentProducts.length === 0 && (
-                        <div className="text-center py-12">
-                            <div className="text-gray-500 mb-2">No products found</div>
-                            <div className="text-sm text-gray-400">
-                                Try adjusting your search or filter criteria
-                            </div>
-                        </div>
-                    )}
-                </div>
+            {/* Header */}
+            <div className='flex justify-between items-center py-4 border-b border-gray-200 mb-6'>
+                <h1 className='font-bold text-xl'>Out Of Stock Products ({filteredProducts.length})</h1>
+                <Button className='bg-black text-white'><FolderDown className="w-4 h-4 mr-2" />Download Excel</Button>
             </div>
+
+            {/* Filters */}
+            <div className='flex flex-wrap gap-4 mb-6'>
+                <div className='relative flex-1 min-w-[200px]'>
+                    <Input
+                        placeholder="Search products..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        className="pl-3"
+                    />
+                </div>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="w-[180px]"><SelectValue placeholder="Category" /></SelectTrigger>
+                    <SelectContent className="bg-white">
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+                <table className="w-full">
+                    <thead>
+                        <tr className="border-b bg-gray-50/50">
+                            <th className="p-4 text-left">
+                                <Checkbox
+                                    checked={selectedProducts.length === currentProducts.length && currentProducts.length > 0}
+                                    onCheckedChange={handleSelectAll}
+                                />
+                            </th>
+                            <th className="p-4 text-left text-sm text-gray-500">Product Name</th>
+                            <th className="p-4 text-left text-sm text-gray-500">Category</th>
+                            <th className="p-4 text-left text-sm text-gray-500">Brand</th>
+                            <th className="p-4 text-left text-sm text-gray-500">Price</th>
+                            <th className="p-4 text-left text-sm text-gray-500">Stock</th>
+                            <th className="p-4 text-left text-sm text-gray-500">Status</th>
+                            <th className="p-4 text-left text-sm text-gray-500">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {currentProducts.map(p => (
+                            <tr key={p.id} className="border-b border-gray-200 hover:bg-gray-50/50">
+                                <td className="p-4">
+                                    <Checkbox
+                                        checked={selectedProducts.includes(p.id)}
+                                        onCheckedChange={checked => handleSelectProduct(p.id, checked)}
+                                    />
+                                </td>
+                                <td className="p-4">
+                                    <div className="font-medium text-gray-900">{p.name}</div>
+                                </td>
+                                <td className="p-4 text-gray-700">{p.category}</td>
+                                <td className="p-4 text-gray-700">{p.brand}</td>
+                                <td className="p-4 text-gray-700">{p.sellingPrice.toLocaleString()}</td>
+                                <td className="p-4 text-gray-700">{p.stock}</td>
+                                <td className="p-4">{getStatusBadge(p.status)}</td>
+                                <td className="p-4">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="sm"><MoreHorizontal className="w-4 h-4" /></Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-48 bg-white">
+                                            <DropdownMenuItem onClick={() => handleAddStock(p)} className='cursor-pointer'><Package className="w-4 h-4 mr-2" />Add Stock</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleDeleteProduct(p.id)} className="text-red-600 hover:text-red-700 cursor-pointer">
+                                                <Trash2 className="w-4 h-4 mr-2" />Delete Product
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </td>
+                            </tr>
+                        ))}
+                        {currentProducts.length === 0 && (
+                            <tr><td colSpan={8} className="text-center p-4 text-gray-500">No products found.</td></tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between p-4 border-t">
+                    <div className="text-sm text-gray-500">
+                        Showing {startIndex + 1} to {Math.min(endIndex, filteredProducts.length)} of {filteredProducts.length} products
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
+                            <ChevronLeft className="w-4 h-4 mr-1" />Previous
+                        </Button>
+                        <div className="flex items-center space-x-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <Button key={page} variant={currentPage === page ? "default" : "outline"} size="sm" className="w-8 h-8 p-0" onClick={() => setCurrentPage(page)}>{page}</Button>
+                            ))}
+                        </div>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
+                            Next<ChevronRight className="w-4 h-4 ml-1" />
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             {/* Add Stock Modal */}
             <AddStockModal

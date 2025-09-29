@@ -76,20 +76,20 @@ const DashLayout = () => {
                 </a>
               </li>
               <li>
-                <a href="/" className="flex items-center gap-2 text-sm text-gray-500 hover:bg-green-100 rounded-md p-2">
+                <a href="/dashboard/sales" className="flex items-center gap-2 text-sm text-gray-500 hover:bg-green-100 rounded-md p-2">
                   <ClipboardList />
                   View Sales
                 </a>
               </li>
               <li>
-                <a href="/" className="flex items-center gap-2 text-sm text-gray-500 hover:bg-green-100 rounded-md p-2">
+                <a href="/dashboard/reports" className="flex items-center gap-2 text-sm text-gray-500 hover:bg-green-100 rounded-md p-2">
                   <ChartArea />
                   Reports
                 </a>
               </li>
             </ul>
           </div>
-          <div className="flex flex-col gap-2 mb-3">
+          {/* <div className="flex flex-col gap-2 mb-3">
             <h1 className="text-sm text-black">Staff</h1>
             <ul>
               <li>
@@ -105,7 +105,7 @@ const DashLayout = () => {
                 </a>
               </li>
             </ul>
-          </div>
+          </div> */}
           <div className="flex flex-col gap-2 mb-3">
             <h1 className="text-sm text-black">Settings</h1>
             <ul>
@@ -162,7 +162,7 @@ const DashLayout = () => {
               <SidebarIcon size={20} />
             </button>
             <h1 className="font-bold text-2xl">
-              Billiard's Place
+              Billiards Chillzone
             </h1>
           </div>
           {/* User Profile Dropdown */}

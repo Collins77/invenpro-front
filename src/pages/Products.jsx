@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -160,6 +160,7 @@ const Products = () => {
     const [itemsPerPage] = useState(5)
     const [stockModalOpen, setStockModalOpen] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState(null)
+    const navigate = useNavigate()
 
     // Split the pathname and filter out empty strings
     const pathnames = location.pathname.split('/').filter((x) => x)
@@ -404,11 +405,9 @@ const Products = () => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-48 bg-white">
-                                                    <DropdownMenuItem>
-                                                        <Eye className="w-4 h-4 mr-2" />
-                                                        View Details
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() =>
+                                                        navigate(`/dashboard/products/edit/${product.id}`, { state: { product } })
+                                                    }>
                                                         <Edit className="w-4 h-4 mr-2" />
                                                         Edit Product
                                                     </DropdownMenuItem>

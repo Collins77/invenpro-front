@@ -54,12 +54,16 @@ export const createSale = async (saleData) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(saleData),
   });
-
   const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to create sale');
+  return data;
+};
 
+export const fetchSales = async () => {
+  const res = await fetch(`${API_URL}/sales`);
+  const data = await res.json();
   if (!res.ok) {
-    throw new Error(data.error || 'Failed to create sale');
+    throw new Error(data.error || "Failed to fetch sales");
   }
-
-  return data; // This will be the created sale object
+  return data;
 };
