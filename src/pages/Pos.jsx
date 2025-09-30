@@ -3,31 +3,51 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronsDownUp, Home, Search, Trash2, User, CheckCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { fetchProducts, createSale } from '../api';
+import { fetchProducts, fetchCategories, createSale } from '../api';
 import { toast } from 'sonner';
 import prod from '../assets/placeholder.png';
 
 const Pos = () => {
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [cart, setCart] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('All Products');
+    const [selectedCategory, setSelectedCategory] = useState('all');
     const [discount, setDiscount] = useState(0);
     const [paymentType, setPaymentType] = useState('');
     const [customerType, setCustomerType] = useState('');
+    // const [user, setUser] = useState(null);
+
+    // useEffect(() => {
+    //     const loadUser = async () => {
+    //       try {
+    //         const data = await getCurrentUser();
+    //         setUser(data);
+    //       } catch (err) {
+    //         console.error(err);
+    //         removeLocalStorage("token");
+    //         navigate("/login");
+    //       }
+    //     };
+    //     loadUser();
+    //   }, [navigate]);
 
     useEffect(() => {
-        const getProducts = async () => {
+        const getData = async () => {
             try {
-                const data = await fetchProducts();
-                setProducts(data);
+                const [productsData, categoriesData] = await Promise.all([
+                    fetchProducts(),
+                    fetchCategories()
+                ]);
+                setProducts(productsData);
+                setCategories(categoriesData);
             } catch (err) {
                 console.error(err);
-                toast.error('Failed to fetch products');
+                toast.error('Failed to fetch data');
             }
         };
-        getProducts();
+        getData();
     }, []);
 
     const toggleCartItem = (product) => {
@@ -102,7 +122,7 @@ const Pos = () => {
     };
 
     const filteredProducts = products.filter(product =>
-        (selectedCategory === 'All Products' || product.category === selectedCategory) &&
+        (selectedCategory === 'all' || product.categoryId === selectedCategory) &&
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -118,8 +138,8 @@ const Pos = () => {
                 <div className="relative flex gap-2 items-center cursor-pointer">
                     <div className="w-[40px] h-[40px] bg-gray-200 flex items-center justify-center rounded-full"><User /></div>
                     <div className="flex flex-col">
-                        <h1 className="font-bold text-sm">Collins Muema</h1>
-                        <p className="text-gray-500 text-sm">admin@invenpro.com</p>
+                        <h1 className="font-bold text-sm">Billiards Chillzone</h1>
+                        <p className="text-gray-500 text-sm">billiardschillzone@gmail.com</p>
                     </div>
                     <ChevronsDownUp className="text-gray-500" size={20} />
                 </div>
@@ -148,9 +168,19 @@ const Pos = () => {
 
                         {/* Category Filter */}
                         <div className='grid grid-cols-6 gap-4'>
-                            {['All Products', 'Whiskey', 'Vodka', 'Wine', 'Gin'].map(cat => (
-                                <p key={cat} onClick={() => setSelectedCategory(cat)} className={`px-2 py-1 border border-gray-300 rounded-md text-sm cursor-pointer ${selectedCategory === cat ? 'bg-black text-white' : 'hover:bg-black hover:text-white duration-300 transition-all'}`}>
-                                    {cat}
+                            <p 
+                                onClick={() => setSelectedCategory('all')} 
+                                className={`px-2 py-1 border border-gray-300 rounded-md text-sm cursor-pointer ${selectedCategory === 'all' ? 'bg-black text-white' : 'hover:bg-black hover:text-white duration-300 transition-all'}`}
+                            >
+                                All Products
+                            </p>
+                            {categories.map(category => (
+                                <p 
+                                    key={category.id} 
+                                    onClick={() => setSelectedCategory(category.id)} 
+                                    className={`px-2 py-1 border border-gray-300 rounded-md text-sm cursor-pointer ${selectedCategory === category.id ? 'bg-black text-white' : 'hover:bg-black hover:text-white duration-300 transition-all'}`}
+                                >
+                                    {category.name}
                                 </p>
                             ))}
                         </div>
@@ -169,7 +199,7 @@ const Pos = () => {
                                     </p>
                                     <div className='flex flex-col items-center mt-2'>
                                         <h1 className='font-bold truncate w-full text-center'>{product.name}</h1>
-                                        <p className='text-gray-500'>{product.category}</p>
+                                        <p className='text-gray-500'>{product.volume}</p>
                                         <h1 className='font-semibold'>KES {product.sellingPrice}</h1>
                                     </div>
                                 </div>
@@ -203,7 +233,7 @@ const Pos = () => {
                     {/* Cart Items */}
                     <div
                         className="overflow-y-auto px-2 py-1"
-                        style={{ maxHeight: '300px', height: '250px' }} // <-- set the max height here
+                        style={{ maxHeight: '300px', height: '250px' }}
                     >
                         {cart.map(item => (
                             <div key={item.productId} className='w-full bg-white flex flex-col gap-1 p-3 border-b border-gray-200 h-[90px]'>

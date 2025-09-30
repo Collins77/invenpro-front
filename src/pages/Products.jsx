@@ -310,10 +310,10 @@ const Products = () => {
                         All Products ({filteredProducts.length})
                     </h1>
                     <div className='flex items-center gap-2'>
-                        <Button className='bg-black text-white cursor-pointer'>
+                        {/* <Button className='bg-black text-white cursor-pointer'>
                             <FolderDown className="w-4 h-4 mr-2" />
                             Download Excel
-                        </Button>
+                        </Button> */}
                         <Link to="/dashboard/add-product">
                             <Button variant="outline" className='hover:bg-black hover:text-white cursor-pointer'>
                                 <Plus className="w-4 h-4 mr-2" />

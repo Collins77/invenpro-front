@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { fetchProducts, fetchSales } from "@/api"
+import { Link } from 'react-router-dom'
 
 const Home = () => {
   const [currentDate, setCurrentDate] = useState('')
@@ -104,7 +105,7 @@ const Home = () => {
             <h1 className='font-semibold text-sm'>Inventory Value</h1>
             <h1 className='text-2xl font-bold'>KES {inventoryValue.toLocaleString()}</h1>
             <div>
-              <a href="" className='text-gray-500 text-sm underline flex items-center'>View Products</a>
+              <Link to="/dashboard/products" className='text-gray-500 text-sm underline flex items-center'>View Products</Link>
             </div>
           </div>
           <div><ShoppingCart className='text-gray-500' /></div>
@@ -116,7 +117,7 @@ const Home = () => {
             <h1 className='font-semibold text-sm'>Today's Sales</h1>
             <h1 className='text-2xl font-bold'>KES {todaysSalesTotal.toLocaleString()}</h1>
             <div>
-              <a href="" className='text-gray-500 text-sm underline flex items-center'>View Sales</a>
+              <Link to="/dashboard/sales" className='text-gray-500 text-sm underline flex items-center'>View Sales</Link>
             </div>
           </div>
           <div><BadgePercent className='text-gray-500' /></div>
@@ -128,7 +129,7 @@ const Home = () => {
             <h1 className='font-semibold text-sm'>Out Of Stock</h1>
             <h1 className='text-2xl font-bold'>{outOfStockProducts.length}</h1>
             <div>
-              <a href="" className='text-gray-500 text-sm underline flex items-center'>View Out of Stock</a>
+              <Link to="/dashboard/out-of-stock" className='text-gray-500 text-sm underline flex items-center'>View Out of Stock</Link>
             </div>
           </div>
           <div><BadgeAlert className='text-gray-500' /></div>
@@ -140,7 +141,7 @@ const Home = () => {
             <h1 className='font-semibold text-sm'>Today's Profit</h1>
             <h1 className='text-2xl font-bold'>KES {todaysProfit.toLocaleString()}</h1>
             <div>
-              <a href="" className='text-gray-500 text-sm underline flex items-center'>View Products</a>
+              <Link to="/dashboard/products" className='text-gray-500 text-sm underline flex items-center'>View Products</Link>
             </div>
           </div>
           <div><TrendingUp className='text-gray-500' /></div>
@@ -152,9 +153,9 @@ const Home = () => {
         <div className='bg-white rounded-md p-2 w-[55%] shadow-md'>
           <div className='flex items-center justify-between mb-6'>
             <h1 className='font-semibold'>Low Stock Alerts</h1>
-            <a href="/dashboard/out-of-stock" className='text-blue-600 underline text-sm gap-2 flex items-center'>
+            <Link to="/dashboard/out-of-stock" className='text-blue-600 underline text-sm gap-2 flex items-center'>
               View Details <ChevronRight />
-            </a>
+            </Link>
           </div>
           <Table>
             <TableCaption>Low stock products.</TableCaption>
@@ -183,9 +184,9 @@ const Home = () => {
         <div className='w-[45%] bg-white rounded-md p-2 shadow-md'>
           <div className='flex items-center justify-between mb-6'>
             <h1 className='font-semibold'>Top Selling Products</h1>
-            <a href="/dashboard/analytics" className='text-blue-600 underline text-sm gap-2 flex items-center'>
+            <Link to="/dashboard/reports" className='text-blue-600 underline text-sm gap-2 flex items-center'>
               View Details <ChevronRight />
-            </a>
+            </Link>
           </div>
           <Table>
             <TableCaption>Top Selling Items.</TableCaption>

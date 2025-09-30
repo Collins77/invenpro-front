@@ -250,7 +250,7 @@ const OutStockProducts = () => {
             {/* Header */}
             <div className='flex justify-between items-center py-4 border-b border-gray-200 mb-6'>
                 <h1 className='font-bold text-xl'>Out Of Stock Products ({filteredProducts.length})</h1>
-                <Button className='bg-black text-white'><FolderDown className="w-4 h-4 mr-2" />Download Excel</Button>
+                {/* <Button className='bg-black text-white'><FolderDown className="w-4 h-4 mr-2" />Download Excel</Button> */}
             </div>
 
             {/* Filters */}

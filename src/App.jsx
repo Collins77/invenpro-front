@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes } from "react-router-dom"
 import DashLayout from "./features/DashLayout"
 import Home from "./pages/Home"
 import AddStock from "./pages/AddStock"
@@ -13,18 +13,17 @@ import SalePage from "./pages/SalePage"
 import Categories from "./pages/Categories"
 import Brands from "./pages/Brands"
 import Reports from "./pages/Reports"
-import Login from "./pages/Login"
-import ProtectedRoute from "./features/ProtectedRoute"
+// import ProtectedRoute from "./features/ProtectedRoute"
+// import Login from "./pages/Login"
 
 function App() {
 
   return (
     <>
       <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={
-          <ProtectedRoute>
             <DashLayout />
-          </ProtectedRoute>
         } >
           <Route index element={<Home />} />
           <Route path="add-stock" element={<AddStock />} />
@@ -39,11 +38,10 @@ function App() {
           <Route path="products/edit/:id" element={<EditProduct />} />
         </Route>
         <Route path="/pos" element={
-          <ProtectedRoute>
             <Pos />
-          </ProtectedRoute>}
+        }
         />
-        <Route path="/login" element={<Login />} />
+        {/* <Route path="/login" element={<Login />} /> */}
       </Routes>
       <Toaster />
     </>
