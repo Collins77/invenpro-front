@@ -197,18 +197,18 @@ const Products = () => {
 
         if (searchTerm) {
             filtered = filtered.filter(product =>
-                product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                product.category.toLowerCase().includes(searchTerm.toLowerCase())
+                product.name.toLowerCase().includes(searchTerm.toLowerCase())
+                // product.brandId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                // product.categoryId.toLowerCase().includes(searchTerm.toLowerCase())
             )
         }
 
         if (categoryFilter !== 'all') {
-            filtered = filtered.filter(product => product.brand === categoryFilter)
+            filtered = filtered.filter(product => product.categoryId === categoryFilter)
         }
 
         if (brandFilter !== 'all') {
-            filtered = filtered.filter(product => product.brand === brandFilter)
+            filtered = filtered.filter(product => product.brandId === brandFilter)
         }
 
         setFilteredProducts(filtered)
