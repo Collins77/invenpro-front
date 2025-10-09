@@ -27,9 +27,9 @@ export default defineConfig({
   //   outDir: '../dist',
   //   emptyOutDir: true
   // },
-  // resolve: {
-  //   alias: {
-  //     "@": path.resolve(__dirname, "./src"),
-  //   },
-  // },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
 })
