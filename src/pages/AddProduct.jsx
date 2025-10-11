@@ -129,12 +129,12 @@ const AddProduct = () => {
 
     // Fetch categories and brands
     const loadCategories = async () => {
-        try { const data = await fetchCategories(); setCategories(data) } 
+        try { const data = await fetchCategories(); setCategories(data) }
         catch { toast.error('Failed to load categories') }
     }
 
     const loadBrands = async () => {
-        try { const data = await fetchBrands(); setBrands(data) } 
+        try { const data = await fetchBrands(); setBrands(data) }
         catch { toast.error('Failed to load brands') }
     }
 
@@ -172,6 +172,13 @@ const AddProduct = () => {
     const handleSubmit = async e => {
         e.preventDefault()
         setSubmitting(true)
+
+        // Validate numeric fields
+        if (form.sellingPrice < 0 || form.purchasePrice < 0 || form.stock < 0 || form.minStock < 0) {
+            toast.error('Values cannot be negative!')
+            setSubmitting(false)
+            return
+        }
         try {
             await createProduct(form)
             toast.success('Product added successfully!')
@@ -242,31 +249,31 @@ const AddProduct = () => {
                 {/* Selling Price */}
                 <div className="space-y-2">
                     <label htmlFor="sellingPrice" className="text-sm font-medium">Selling Price</label>
-                    <Input id="sellingPrice" type="number" value={form.sellingPrice} onChange={handleChange} placeholder="Selling Price" required />
+                    <Input id="sellingPrice" type="number" min={0} value={form.sellingPrice} onChange={handleChange} placeholder="Selling Price" required />
                 </div>
 
                 {/* Purchase Price */}
                 <div className="space-y-2">
                     <label htmlFor="purchasePrice" className="text-sm font-medium">Purchase Price</label>
-                    <Input id="purchasePrice" type="number" value={form.purchasePrice} onChange={handleChange} placeholder="Purchase Price" required />
+                    <Input id="purchasePrice" type="number" min={0} value={form.purchasePrice} onChange={handleChange} placeholder="Purchase Price" required />
                 </div>
 
                 {/* Stock */}
                 <div className="space-y-2">
                     <label htmlFor="stock" className="text-sm font-medium">Starting Stock</label>
-                    <Input id="stock" type="number" value={form.stock} onChange={handleChange} placeholder="Starting Stock" required />
+                    <Input id="stock" type="number" min={0} value={form.stock} onChange={handleChange} placeholder="Starting Stock" required />
                 </div>
 
                 {/* Min Stock */}
                 <div className="space-y-2">
                     <label htmlFor="minStock" className="text-sm font-medium">Minimum Stock</label>
-                    <Input id="minStock" type="number" value={form.minStock} onChange={handleChange} placeholder="Minimum Stock" required />
+                    <Input id="minStock" type="number" min={0} value={form.minStock} onChange={handleChange} placeholder="Minimum Stock" required />
                 </div>
 
                 {/* Volume */}
                 <div className="space-y-2">
                     <label htmlFor="volume" className="text-sm font-medium">Volume</label>
-                    <Input id="volume" value={form.volume} onChange={handleChange} placeholder="e.g. 250ML" />
+                    <Input id="volume" value={form.volume} onChange={handleChange} placeholder="e.g. 250ML" required />
                 </div>
 
                 {/* Buttons */}
