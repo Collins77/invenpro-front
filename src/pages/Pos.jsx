@@ -139,7 +139,7 @@ const Pos = () => {
                     <div className="w-[40px] h-[40px] bg-gray-200 flex items-center justify-center rounded-full"><User /></div>
                     <div className="flex flex-col">
                         <h1 className="font-bold text-sm">{user?.firstName} {user?.lastName}</h1>
-                        <p className="text-gray-500 text-sm">{user.email}</p>
+                        <p className="text-gray-500 text-sm">{user?.email}</p>
                     </div>
                     {/* <ChevronsDownUp className="text-gray-500" size={20} /> */}
                 </div>
