@@ -24,6 +24,7 @@ const DashLayout = () => {
       }
     };
     loadUser();
+    console.log(user);
   }, [navigate]);
 
   const handleLogout = () => {
@@ -157,7 +158,7 @@ const DashLayout = () => {
         {/* Name and Profile */}
         <div className="border-t border-gray-200 bg-white p-3 ">
           <div>
-            <h1 className="font-bold text-sm">{user?.firstName} {user.lastName}</h1>
+            <h1 className="font-bold text-sm">{user?.firstName} {user?.lastName}</h1>
             <p className="text-sm text-gray-500">{user?.email}</p>
           </div>
           
