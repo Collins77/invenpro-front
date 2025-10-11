@@ -18,13 +18,13 @@ const DashLayout = () => {
       try {
         const data = await getCurrentUser();
         setUser(data);
+        console.log(data)
       } catch (err) {
         console.error(err);
         navigate("/login");
       }
     };
     loadUser();
-    console.log(user);
   }, [navigate]);
 
   const handleLogout = () => {
@@ -243,7 +243,7 @@ const DashLayout = () => {
                     </a>
                   </li>   
                 </ul> */}
-                <button onClick={() => handleLogout} className="p-2 flex items-center gap-1 text-sm text-gray-500 cursor-pointer">
+                <button onClick={handleLogout} className="p-2 flex items-center gap-1 text-sm text-gray-500 cursor-pointer">
                   <LogOut size={20} />
                   Log Out
                 </button>
