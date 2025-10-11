@@ -203,7 +203,7 @@ const DashLayout = () => {
                 <User />
               </div>
               <div className="flex flex-col">
-                <h1 className="font-bold text-sm">{user?.firstName} {user.lastName}</h1>
+                <h1 className="font-bold text-sm">{user?.firstName} {user?.lastName}</h1>
                 <p className="text-gray-500 text-sm">{user?.email}</p>
               </div>
               <ChevronsDownUp className="text-gray-500" size={20} />
@@ -219,7 +219,7 @@ const DashLayout = () => {
                     <User />
                   </div>
                   <div className="flex flex-col">
-                    <h1 className="font-bold text-[12px]">{user?.firstName} {user.lastName}</h1>
+                    <h1 className="font-bold text-[12px]">{user?.firstName} {user?.lastName}</h1>
                     <p className="text-gray-500 text-[10px]">{user?.email}</p>
                   </div>
                 </div>
