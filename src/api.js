@@ -138,45 +138,51 @@ export const deleteBrand = async (id) => {
   return res.json();
 };
 
-// // --- Auth ---
-// export const registerUser = async (userData) => {
-//   const res = await fetch(`${API_URL}/auth/register`, {
-//     method: 'POST',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify(userData),
-//   });
-//   const data = await res.json();
-//   if (!res.ok) throw new Error(data.error || 'Failed to register user');
-//   return data;
-// };
+// --- Auth ---
+export const registerUser = async (userData) => {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to register user');
+  return data;
+};
 
-// export const loginUser = async (credentials) => {
-//   const res = await fetch(`${API_URL}/auth/login`, {
-//     method: 'POST',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify(credentials),
-//   });
-//   const data = await res.json();
-//   if (!res.ok) throw new Error(data.error || 'Failed to login');
-//   // Save token in localStorage
-//   if (data.token) setLocalStorage('token', data.token);
-//   return data;
-// };
+export const loginUser = async (credentials) => {
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(credentials),
+  });
 
-// export const getCurrentUser = async () => {
-//   const token = getLocalStorage('token');
-//   if (!token) throw new Error('No token found');
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to login');
 
-//   const res = await fetch(`${API_URL}/auth/me`, {
-//     headers: {
-//       'Authorization': `Bearer ${token}`,
-//     },
-//   });
-//   const data = await res.json();
-//   if (!res.ok) throw new Error(data.error || 'Failed to fetch user');
-//   return data;
-// };
+  // Directly save token in localStorage
+  if (data.token) {
+    localStorage.setItem('token', data.token);
+  }
+  return data;
+};
 
-// export const logoutUser = () => {
-//   removeLocalStorage('token');
-// };
+export const getCurrentUser = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('No token found');
+
+  const res = await fetch(`${API_URL}/auth/me`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to fetch user');
+  return data;
+};
+
+export const logoutUser = () => {
+  // Remove token from localStorage
+  localStorage.removeItem('token');
+};

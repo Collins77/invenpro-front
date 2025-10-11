@@ -1,37 +1,37 @@
 import React, { useState } from 'react'
-// import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
-// import { loginUser } from '../api'
-// import { toast } from 'sonner'
+import { loginUser } from '../api'
+import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const Login = () => {
-  // const navigate = useNavigate()
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  // const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault()
-  //   setLoading(true)
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
 
-  //   try {
-  //     await loginUser({ email, password })
-  //     toast.success('Login successful 🎉')
-  //     navigate('/dashboard')
-  //   } catch (err) {
-  //     toast.error(err.message || 'Login failed')
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
+    try {
+      await loginUser({ email, password })
+      toast.success('Login successful 🎉')
+      navigate('/dashboard')
+    } catch (err) {
+      toast.error(err.message || 'Login failed')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className='bg-white flex flex-col items-center justify-center'>
       <div className='h-[100vh] w-full flex items-center justify-center'>
         <form 
-          // onSubmit={handleSubmit} 
+          onSubmit={handleSubmit} 
           className='p-4 rounded-md shadow-md w-[350px] bg-white'
         >
           <div className='flex flex-col gap-1 mb-[10px] pb-4 border-b border-gray-200'>
@@ -66,16 +66,16 @@ const Login = () => {
           <Button 
             type="submit"
             className='bg-black text-white w-full flex items-center justify-center'
-            // disabled={loading}
+            disabled={loading}
           >
-            {/* {loading ? (
+            {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Logging in...
               </>
             ) : (
               'Login'
-            )} */}
+            )}
           </Button>
         </form>
       </div>

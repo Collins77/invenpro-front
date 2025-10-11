@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { BadgePercent, Blocks, ChartArea, ChevronsDownUp, ClipboardList, Codepen, CreditCard, LayoutDashboard, List, LogOut, Plus, ScanBarcode, ShoppingBag, SidebarIcon, User, UserPlus, Users, Verified } from "lucide-react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
+import { getCurrentUser, logoutUser } from "../api";
+import { useEffect } from "react";
 // import { getCurrentUser, logoutUser, removeLocalStorage } from "../api";
 // import { useEffect } from "react";
 
@@ -8,27 +10,26 @@ const DashLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true); // desktop
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false); // mobile
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  // const [user, setUser] = useState(null);
-  // const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const loadUser = async () => {
-  //     try {
-  //       const data = await getCurrentUser();
-  //       setUser(data);
-  //     } catch (err) {
-  //       console.error(err);
-  //       removeLocalStorage("token");
-  //       navigate("/login");
-  //     }
-  //   };
-  //   loadUser();
-  // }, [navigate]);
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const data = await getCurrentUser();
+        setUser(data);
+      } catch (err) {
+        console.error(err);
+        navigate("/login");
+      }
+    };
+    loadUser();
+  }, [navigate]);
 
-  // const handleLogout = () => {
-  //   logoutUser();
-  //   navigate("/login");
-  // };
+  const handleLogout = () => {
+    logoutUser();
+    navigate("/login");
+  };
 
 
   // function to handle sidebar toggle from header icon
@@ -156,8 +157,8 @@ const DashLayout = () => {
         {/* Name and Profile */}
         <div className="border-t border-gray-200 bg-white p-3 ">
           <div>
-            <h1 className="font-bold text-sm">Billiards Chillzone</h1>
-            <p className="text-sm text-gray-500">billiardschillzone@gmail.com</p>
+            <h1 className="font-bold text-sm">{user?.firstName} {user.lastName}</h1>
+            <p className="text-sm text-gray-500">{user?.email}</p>
           </div>
           
         </div>
@@ -201,8 +202,8 @@ const DashLayout = () => {
                 <User />
               </div>
               <div className="flex flex-col">
-                <h1 className="font-bold text-sm">Billiards Chillzone</h1>
-                <p className="text-gray-500 text-sm">billiardschillzone@gmail.com</p>
+                <h1 className="font-bold text-sm">{user?.firstName} {user.lastName}</h1>
+                <p className="text-gray-500 text-sm">{user?.email}</p>
               </div>
               <ChevronsDownUp className="text-gray-500" size={20} />
             </div>
@@ -217,8 +218,8 @@ const DashLayout = () => {
                     <User />
                   </div>
                   <div className="flex flex-col">
-                    <h1 className="font-bold text-[12px]">Billiards Chillzone</h1>
-                    <p className="text-gray-500 text-[10px]">billiardschillzone@gmail.com</p>
+                    <h1 className="font-bold text-[12px]">{user?.firstName} {user.lastName}</h1>
+                    <p className="text-gray-500 text-[10px]">{user?.email}</p>
                   </div>
                 </div>
                 {/* <ul className="flex flex-col p-2 gap-2 border-b border-gray-200">
@@ -241,7 +242,7 @@ const DashLayout = () => {
                     </a>
                   </li>   
                 </ul> */}
-                <button onClick={() => {}} className="p-2 flex items-center gap-1 text-sm text-gray-500 cursor-pointer">
+                <button onClick={() => handleLogout} className="p-2 flex items-center gap-1 text-sm text-gray-500 cursor-pointer">
                   <LogOut size={20} />
                   Log Out
                 </button>
