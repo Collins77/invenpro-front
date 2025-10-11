@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronsDownUp, Home, Search, Trash2, User, CheckCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { fetchProducts, fetchCategories, createSale } from '../api';
+import { fetchProducts, fetchCategories, createSale, getCurrentUser } from '../api';
 import { toast } from 'sonner';
 import prod from '../assets/placeholder.png';
 
@@ -17,21 +17,21 @@ const Pos = () => {
     const [discount, setDiscount] = useState(0);
     const [paymentType, setPaymentType] = useState('');
     const [customerType, setCustomerType] = useState('');
-    // const [user, setUser] = useState(null);
+    const [user, setUser] = useState(null);
 
-    // useEffect(() => {
-    //     const loadUser = async () => {
-    //       try {
-    //         const data = await getCurrentUser();
-    //         setUser(data);
-    //       } catch (err) {
-    //         console.error(err);
-    //         removeLocalStorage("token");
-    //         navigate("/login");
-    //       }
-    //     };
-    //     loadUser();
-    //   }, [navigate]);
+    useEffect(() => {
+        const loadUser = async () => {
+          try {
+            const data = await getCurrentUser();
+            setUser(data);
+          } catch (err) {
+            console.error(err);
+            // removeLocalStorage("token");
+            navigate("/login");
+          }
+        };
+        loadUser();
+      }, [navigate]);
 
     useEffect(() => {
         const getData = async () => {
@@ -138,10 +138,10 @@ const Pos = () => {
                 <div className="relative flex gap-2 items-center cursor-pointer">
                     <div className="w-[40px] h-[40px] bg-gray-200 flex items-center justify-center rounded-full"><User /></div>
                     <div className="flex flex-col">
-                        <h1 className="font-bold text-sm">Billiards Chillzone</h1>
-                        <p className="text-gray-500 text-sm">billiardschillzone@gmail.com</p>
+                        <h1 className="font-bold text-sm">{user?.firstName} {user?.lastName}</h1>
+                        <p className="text-gray-500 text-sm">{user.email}</p>
                     </div>
-                    <ChevronsDownUp className="text-gray-500" size={20} />
+                    {/* <ChevronsDownUp className="text-gray-500" size={20} /> */}
                 </div>
             </header>
 
