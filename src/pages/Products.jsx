@@ -36,13 +36,14 @@ import {
     Trash2,
     ChevronLeft,
     ChevronRight,
-    Eye
+    Eye,
+    Loader
 } from 'lucide-react'
 import { fetchProducts, addStock as addStockAPI, deleteProduct as deleteProductAPI, fetchBrands, fetchCategories } from '../api'
 
 
 // Add Stock Modal Component
-const AddStockModal = ({ product, isOpen, onClose, onSubmit }) => {
+const AddStockModal = ({ product, isOpen, onClose, onSubmit, isLoading }) => {
     const [stockData, setStockData] = useState({
         quantity: '',
         unitCost: '',
@@ -138,7 +139,16 @@ const AddStockModal = ({ product, isOpen, onClose, onSubmit }) => {
                         <Button type="button" variant="outline" className='cursor-pointer' onClick={onClose}>
                             Cancel
                         </Button>
-                        <Button type="submit" className='bg-black text-white cursor-pointer'>Add Stock</Button>
+                        <Button disabled={isLoading} type="submit" className='bg-black text-white cursor-pointer flex items-center gap-1'>
+                            {isLoading ? (
+                                <>
+                                    <Loader className='animate-spin w-4 h-4 mr-2' size={18} />
+                                    Adding Stock...
+                                </>
+                            ) : (
+                                'Add Stock'
+                            )}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
@@ -158,6 +168,9 @@ const Products = () => {
     const [itemsPerPage] = useState(5)
     const [stockModalOpen, setStockModalOpen] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState(null)
+    const [loadingProducts, setLoadingProducts] = useState(true) // Add this
+    const [addingStock, setAddingStock] = useState(false) // Add this for stock submission
+    const [deletingProduct, setDeletingProduct] = useState(null)
     // const navigate = useNavigate();
 
     const [brands, setBrands] = useState([]);
@@ -165,14 +178,23 @@ const Products = () => {
 
     // Fetch products, brands, and categories
     const fetchAllData = async () => {
-        const productsData = await fetchProducts();
-        const brandsData = await fetchBrands(); // fetchBrands() should return [{id, name}, ...]
-        const categoriesData = await fetchCategories(); // fetchCategories() should return [{id, name}, ...]
+        setLoadingProducts(true) // Start loading
+        try {
+            const [productsData, brandsData, categoriesData] = await Promise.all([
+                fetchProducts(),
+                fetchBrands(),
+                fetchCategories()
+            ])
 
-        setProducts(productsData);
-        setFilteredProducts(productsData);
-        setBrands(brandsData);
-        setCategories(categoriesData);
+            setProducts(productsData)
+            setFilteredProducts(productsData)
+            setBrands(brandsData)
+            setCategories(categoriesData)
+        } catch (error) {
+            console.error('Error fetching data:', error)
+        } finally {
+            setLoadingProducts(false) // End loading
+        }
     }
 
     useEffect(() => {
@@ -182,9 +204,16 @@ const Products = () => {
     // Split the pathname and filter out empty strings
     const pathnames = location.pathname.split('/').filter((x) => x)
     const fetchAllProducts = async () => {
-        const data = await fetchProducts()
-        setProducts(data)
-        setFilteredProducts(data)
+        setLoadingProducts(true)
+        try {
+            const data = await fetchProducts()
+            setProducts(data)
+            setFilteredProducts(data)
+        } catch (error) {
+            console.error('Error fetching products:', error)
+        } finally {
+            setLoadingProducts(false)
+        }
     }
 
     useEffect(() => {
@@ -255,15 +284,27 @@ const Products = () => {
     }
 
     const handleStockSubmit = async (stockData) => {
-        await addStockAPI(stockData.productId, stockData)
-        // Refresh products after stock addition
-        fetchAllProducts()
+        setAddingStock(true) // Start loading
+        try {
+            await addStockAPI(stockData.productId, stockData)
+            await fetchAllProducts()
+        } catch (error) {
+            console.error('Error adding stock:', error)
+        } finally {
+            setAddingStock(false) // End loading
+        }
     }
-
     const handleDeleteProduct = async (productId) => {
         if (window.confirm('Are you sure you want to delete this product?')) {
-            await deleteProductAPI(productId)
-            fetchAllProducts()
+            setDeletingProduct(productId)
+            try {
+                await deleteProductAPI(productId)
+                await fetchAllProducts()
+            } catch (error) {
+                console.error('Error deleting product:', error)
+            } finally {
+                setDeletingProduct(null)
+            }
         }
     }
 
@@ -362,150 +403,163 @@ const Products = () => {
                     </Select>
                 </div>
 
-                {/* Table */}
-                <div className="">
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b bg-gray-50/50">
-                                    <th className="p-4 text-left">
-                                        <Checkbox
-                                            checked={selectedProducts.length === currentProducts.length && currentProducts.length > 0}
-                                            onCheckedChange={handleSelectAll}
-                                        />
-                                    </th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Product Name</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Category</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Brand</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Price (KES)</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Stock</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Status</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Last Stocked</th>
-                                    <th className="p-4 text-left text-sm text-gray-500">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {currentProducts.map((product) => (
-                                    <tr key={product.id} className="border-b border-gray-200 hover:bg-gray-50/50">
-                                        <td className="p-4">
-                                            <Checkbox
-                                                checked={selectedProducts.includes(product.id)}
-                                                onCheckedChange={(checked) => handleSelectProduct(product.id, checked)}
-                                            />
-                                        </td>
-                                        <td className="p-4">
-                                            <div>
-                                                <div className="font-medium text-gray-900">{product.name}</div>
-                                                <div className="text-sm text-gray-500">{product.volume}</div>
-                                            </div>
-                                        </td>
-                                        <td className="p-4 text-gray-700">
-                                            {categories.find(c => c.id === product.categoryId)?.name || 'Unknown'}
-                                        </td>
-                                        <td className="p-4 text-gray-700">
-                                            {brands.find(b => b.id === product.brandId)?.name || 'Unknown'}
-                                        </td>
-                                        <td className="p-4 text-gray-700">{product.sellingPrice.toLocaleString()}</td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-1">
-                                                <span className={`font-medium ${product.stock <= product.minStock ? 'text-red-600' : 'text-gray-900'}`}>
-                                                    {product.stock}
-                                                </span>
-                                                {product.stock <= product.minStock && (
-                                                    <span className="text-xs text-red-500">(Low)</span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="p-4">{getStatusBadge(product.status)}</td>
-                                        <td className="p-4 text-gray-700 text-sm">
-                                            {new Date(product.lastStocked).toLocaleDateString()}
-                                        </td>
-                                        <td className="p-4">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="sm">
-                                                        <MoreHorizontal className="w-4 h-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-48 bg-white">
-                                                    {/* <DropdownMenuItem onClick={() =>
-                                                        navigate(`/dashboard/products/edit/${product.id}`, { state: { product } })
-                                                    }>
-                                                        <Edit className="w-4 h-4 mr-2" />
-                                                        Edit Product
-                                                    </DropdownMenuItem> */}
-                                                    <DropdownMenuItem onClick={() => handleAddStock(product)}>
-                                                        <Package className="w-4 h-4 mr-2" />
-                                                        Add Stock
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleDeleteProduct(product.id)}
-                                                        className="text-red-600 hover:text-red-700"
-                                                    >
-                                                        <Trash2 className="w-4 h-4 mr-2" />
-                                                        Delete Product
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                {loadingProducts ? (
+                    <div className="flex flex-col items-center justify-center py-12">
+                        <Loader className="animate-spin text-gray-400 mb-3" size={40} />
+                        <p className="text-gray-500">Loading products...</p>
                     </div>
-
-                    {/* Pagination */}
-                    {totalPages < 6 && (
-                        <div className="flex items-center justify-between p-4 border-t">
-                            <div className="text-sm text-gray-500">
-                                Showing {startIndex + 1} to {Math.min(endIndex, filteredProducts.length)} of {filteredProducts.length} products
+                ) : (
+                    <>
+                        {/* Table */}
+                        <div className="">
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b bg-gray-50/50">
+                                            <th className="p-4 text-left">
+                                                <Checkbox
+                                                    checked={selectedProducts.length === currentProducts.length && currentProducts.length > 0}
+                                                    onCheckedChange={handleSelectAll}
+                                                />
+                                            </th>
+                                            <th className="p-4 text-left text-sm text-gray-500">Product Name</th>
+                                            <th className="p-4 text-left text-sm text-gray-500">Category</th>
+                                            <th className="p-4 text-left text-sm text-gray-500">Brand</th>
+                                            <th className="p-4 text-left text-sm text-gray-500">Price (KES)</th>
+                                            <th className="p-4 text-left text-sm text-gray-500">Stock</th>
+                                            <th className="p-4 text-left text-sm text-gray-500">Status</th>
+                                            <th className="p-4 text-left text-sm text-gray-500">Last Stocked</th>
+                                            <th className="p-4 text-left text-sm text-gray-500">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {currentProducts.map((product) => (
+                                            <tr key={product.id} className="border-b border-gray-200 hover:bg-gray-50/50">
+                                                <td className="p-4">
+                                                    <Checkbox
+                                                        checked={selectedProducts.includes(product.id)}
+                                                        onCheckedChange={(checked) => handleSelectProduct(product.id, checked)}
+                                                    />
+                                                </td>
+                                                <td className="p-4">
+                                                    <div>
+                                                        <div className="font-medium text-gray-900">{product.name}</div>
+                                                        <div className="text-sm text-gray-500">{product.volume}</div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-gray-700">
+                                                    {categories.find(c => c.id === product.categoryId)?.name || 'Unknown'}
+                                                </td>
+                                                <td className="p-4 text-gray-700">
+                                                    {brands.find(b => b.id === product.brandId)?.name || 'Unknown'}
+                                                </td>
+                                                <td className="p-4 text-gray-700">{product.sellingPrice.toLocaleString()}</td>
+                                                <td className="p-4">
+                                                    <div className="flex items-center gap-1">
+                                                        <span className={`font-medium ${product.stock <= product.minStock ? 'text-red-600' : 'text-gray-900'}`}>
+                                                            {product.stock}
+                                                        </span>
+                                                        {product.stock <= product.minStock && (
+                                                            <span className="text-xs text-red-500">(Low)</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4">{getStatusBadge(product.status)}</td>
+                                                <td className="p-4 text-gray-700 text-sm">
+                                                    {new Date(product.lastStocked).toLocaleDateString()}
+                                                </td>
+                                                <td className="p-4">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="sm">
+                                                                <MoreHorizontal className="w-4 h-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="w-48 bg-white">
+                                                            <DropdownMenuItem onClick={() => handleAddStock(product)} className='cursor-pointer'>
+                                                                <Package className="w-4 h-4 mr-2" />
+                                                                Add Stock
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                onClick={() => handleDeleteProduct(product.id)}
+                                                                className="text-red-600 hover:text-red-700 cursor-pointer"
+                                                                disabled={deletingProduct === product.id}
+                                                            >
+                                                                {deletingProduct === product.id ? (
+                                                                    <>
+                                                                        <Loader className="w-4 h-4 mr-2 animate-spin" />
+                                                                        Deleting...
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <Trash2 className="w-4 h-4 mr-2" />
+                                                                        Delete Product
+                                                                    </>
+                                                                )}
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
-                            <div className="flex items-center space-x-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                    disabled={currentPage === 1}
-                                >
-                                    <ChevronLeft className="w-4 h-4 mr-1" />
-                                    Previous
-                                </Button>
-                                <div className="flex items-center space-x-1">
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+
+                            {/* Pagination */}
+                            {totalPages < 6 && (
+                                <div className="flex items-center justify-between p-4 border-t">
+                                    <div className="text-sm text-gray-500">
+                                        Showing {startIndex + 1} to {Math.min(endIndex, filteredProducts.length)} of {filteredProducts.length} products
+                                    </div>
+                                    <div className="flex items-center space-x-2">
                                         <Button
-                                            key={page}
-                                            variant={currentPage === page ? "default" : "outline"}
+                                            variant="outline"
                                             size="sm"
-                                            onClick={() => setCurrentPage(page)}
-                                            className="w-8 h-8 p-0"
+                                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                            disabled={currentPage === 1}
                                         >
-                                            {page}
+                                            <ChevronLeft className="w-4 h-4 mr-1" />
+                                            Previous
                                         </Button>
-                                    ))}
+                                        <div className="flex items-center space-x-1">
+                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                                <Button
+                                                    key={page}
+                                                    variant={currentPage === page ? "default" : "outline"}
+                                                    size="sm"
+                                                    onClick={() => setCurrentPage(page)}
+                                                    className="w-8 h-8 p-0"
+                                                >
+                                                    {page}
+                                                </Button>
+                                            ))}
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            Next
+                                            <ChevronRight className="w-4 h-4 ml-1" />
+                                        </Button>
+                                    </div>
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                    disabled={currentPage === totalPages}
-                                >
-                                    Next
-                                    <ChevronRight className="w-4 h-4 ml-1" />
-                                </Button>
-                            </div>
-                        </div>
-                    )}
+                            )}
 
-                    {/* No results */}
-                    {currentProducts.length === 0 && (
-                        <div className="text-center py-12">
-                            <div className="text-gray-500 mb-2">No products found</div>
-                            <div className="text-sm text-gray-400">
-                                Try adjusting your search or filter criteria
-                            </div>
+                            {/* No results */}
+                            {currentProducts.length === 0 && (
+                                <div className="text-center py-12">
+                                    <div className="text-gray-500 mb-2">No products found</div>
+                                    <div className="text-sm text-gray-400">
+                                        Try adjusting your search or filter criteria
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
+                    </>
+                )}
             </div>
 
             {/* Add Stock Modal */}
@@ -514,6 +568,7 @@ const Products = () => {
                 isOpen={stockModalOpen}
                 onClose={() => setStockModalOpen(false)}
                 onSubmit={handleStockSubmit}
+                isLoading={addingStock}
             />
         </div>
     )
