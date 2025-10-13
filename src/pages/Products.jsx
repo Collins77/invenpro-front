@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -158,7 +158,7 @@ const Products = () => {
     const [itemsPerPage] = useState(5)
     const [stockModalOpen, setStockModalOpen] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState(null)
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
     const [brands, setBrands] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -428,12 +428,12 @@ const Products = () => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-48 bg-white">
-                                                    <DropdownMenuItem onClick={() =>
+                                                    {/* <DropdownMenuItem onClick={() =>
                                                         navigate(`/dashboard/products/edit/${product.id}`, { state: { product } })
                                                     }>
                                                         <Edit className="w-4 h-4 mr-2" />
                                                         Edit Product
-                                                    </DropdownMenuItem>
+                                                    </DropdownMenuItem> */}
                                                     <DropdownMenuItem onClick={() => handleAddStock(product)}>
                                                         <Package className="w-4 h-4 mr-2" />
                                                         Add Stock

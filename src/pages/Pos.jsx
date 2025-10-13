@@ -18,23 +18,26 @@ const Pos = () => {
     const [paymentType, setPaymentType] = useState('');
     const [customerType, setCustomerType] = useState('');
     const [user, setUser] = useState(null);
+    const [loadingProducts, setLoadingProducts] = useState(true); // Add this
+    const [confirmingSale, setConfirmingSale] = useState(false);
 
     useEffect(() => {
         const loadUser = async () => {
-          try {
-            const data = await getCurrentUser();
-            setUser(data);
-          } catch (err) {
-            console.error(err);
-            // removeLocalStorage("token");
-            navigate("/login");
-          }
+            try {
+                const data = await getCurrentUser();
+                setUser(data);
+            } catch (err) {
+                console.error(err);
+                // removeLocalStorage("token");
+                navigate("/login");
+            }
         };
         loadUser();
-      }, [navigate]);
+    }, [navigate]);
 
     useEffect(() => {
         const getData = async () => {
+            setLoadingProducts(true);
             try {
                 const [productsData, categoriesData] = await Promise.all([
                     fetchProducts(),
@@ -45,6 +48,8 @@ const Pos = () => {
             } catch (err) {
                 console.error(err);
                 toast.error('Failed to fetch data');
+            } finally {
+                setLoadingProducts(false); // End loading
             }
         };
         getData();
@@ -89,6 +94,8 @@ const Pos = () => {
         if (!paymentType) return toast.error('Please select a payment type');
         if (!customerType) return toast.error('Please select a customer type');
 
+        setConfirmingSale(true);
+
         try {
             const saleData = {
                 items: cart.map(item => ({
@@ -118,6 +125,8 @@ const Pos = () => {
         } catch (err) {
             console.error(err);
             toast.error(err.message || 'Failed to confirm sale');
+        } finally {
+            setConfirmingSale(false); // End loading
         }
     };
 
@@ -168,16 +177,16 @@ const Pos = () => {
 
                         {/* Category Filter */}
                         <div className='grid grid-cols-6 gap-4'>
-                            <p 
-                                onClick={() => setSelectedCategory('all')} 
+                            <p
+                                onClick={() => setSelectedCategory('all')}
                                 className={`px-2 py-1 border border-gray-300 rounded-md text-sm cursor-pointer ${selectedCategory === 'all' ? 'bg-black text-white' : 'hover:bg-black hover:text-white duration-300 transition-all'}`}
                             >
                                 All Products
                             </p>
                             {categories.map(category => (
-                                <p 
-                                    key={category.id} 
-                                    onClick={() => setSelectedCategory(category.id)} 
+                                <p
+                                    key={category.id}
+                                    onClick={() => setSelectedCategory(category.id)}
                                     className={`px-2 py-1 border border-gray-300 rounded-md text-sm cursor-pointer ${selectedCategory === category.id ? 'bg-black text-white' : 'hover:bg-black hover:text-white duration-300 transition-all'}`}
                                 >
                                     {category.name}
@@ -188,23 +197,39 @@ const Pos = () => {
 
                     {/* Product Cards */}
                     <div className='grid grid-cols-5 gap-2 bg-blue-200/10 p-2 max-h-[600px] overflow-y-scroll'>
-                        {filteredProducts.map(product => {
-                            const inCart = cart.find(item => item.productId === product.id);
-                            return (
-                                <div key={product.id} className='bg-white border border-gray-200 rounded-md p-2 h-[200px] relative cursor-pointer' onClick={() => toggleCartItem(product)}>
-                                    <img src={prod} alt={product.name} className='w-full h-[50%] rounded-lg object-cover' />
-                                    {inCart && <CheckCircle className="absolute top-2 right-2 text-blue-500" size={20} />}
-                                    <p className='bg-black absolute text-[10px] py-1 px-2 w-fit rounded-full text-white left-2 top-2'>
-                                        {product.stock} in stock
-                                    </p>
-                                    <div className='flex flex-col items-center mt-2'>
-                                        <h1 className='font-bold truncate w-full text-center'>{product.name}</h1>
-                                        <p className='text-gray-500'>{product.volume}</p>
-                                        <h1 className='font-semibold'>KES {product.sellingPrice}</h1>
-                                    </div>
+                        {loadingProducts ? (
+                            // Loading state
+                            <div className='col-span-5 flex items-center justify-center h-[200px]'>
+                                <div className='flex flex-col items-center gap-2'>
+                                    <Loader className='animate-spin text-gray-400' size={40} />
+                                    <p className='text-gray-500'>Loading products...</p>
                                 </div>
-                            )
-                        })}
+                            </div>
+                        ) : filteredProducts.length === 0 ? (
+                            // Empty state
+                            <div className='col-span-5 flex items-center justify-center h-[200px]'>
+                                <p className='text-gray-500'>No products found</p>
+                            </div>
+                        ) : (
+                            // Products render
+                            filteredProducts.map(product => {
+                                const inCart = cart.find(item => item.productId === product.id);
+                                return (
+                                    <div key={product.id} className='bg-white border border-gray-200 rounded-md p-2 h-[200px] relative cursor-pointer' onClick={() => toggleCartItem(product)}>
+                                        <img src={prod} alt={product.name} className='w-full h-[50%] rounded-lg object-cover' />
+                                        {inCart && <CheckCircle className="absolute top-2 right-2 text-blue-500" size={20} />}
+                                        <p className='bg-black absolute text-[10px] py-1 px-2 w-fit rounded-full text-white left-2 top-2'>
+                                            {product.stock} in stock
+                                        </p>
+                                        <div className='flex flex-col items-center mt-2'>
+                                            <h1 className='font-bold truncate w-full text-center'>{product.name}</h1>
+                                            <p className='text-gray-500'>{product.volume}</p>
+                                            <h1 className='font-semibold'>KES {product.sellingPrice}</h1>
+                                        </div>
+                                    </div>
+                                )
+                            })
+                        )}
                     </div>
                 </div>
 
@@ -268,8 +293,11 @@ const Pos = () => {
                             <p className='font-bold text-lg'>KES {total}</p>
                         </div>
                         <div className='flex gap-3'>
-                            <button className='py-2 px-4 w-full cursor-pointer border border-gray-300 rounded-md hover:bg-black/60 hover:text-white transition-all duration-300' onClick={resetCart}>Reset</button>
-                            <button className='py-2 px-4 w-full cursor-pointer border border-gray-300 rounded-md bg-black text-white' onClick={handleConfirmSale}>Confirm Sale</button>
+                            <button disabled={confirmingSale} className='py-2 px-4 w-full cursor-pointer border border-gray-300 rounded-md hover:bg-black/60 hover:text-white transition-all duration-300' onClick={resetCart}>
+                                {confirmingSale && <Loader className='animate-spin' size={18} />}
+                                {confirmingSale ? 'Processing...' : 'Confirm Sale'}
+                            </button>
+                            <button disabled={confirmingSale} className='py-2 px-4 w-full cursor-pointer border border-gray-300 rounded-md bg-black text-white' onClick={handleConfirmSale}>Confirm Sale</button>
                         </div>
                     </div>
                 </div>

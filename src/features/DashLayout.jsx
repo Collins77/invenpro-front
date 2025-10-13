@@ -18,7 +18,6 @@ const DashLayout = () => {
       try {
         const data = await getCurrentUser();
         setUser(data);
-        console.log(data)
       } catch (err) {
         console.error(err);
         navigate("/login");
