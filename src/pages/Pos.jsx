@@ -296,7 +296,7 @@ const Pos = () => {
                             <button disabled={confirmingSale} className='py-2 px-4 w-full cursor-pointer border border-gray-300 rounded-md hover:bg-black/60 hover:text-white transition-all duration-300' onClick={resetCart}>
                                 Reset
                             </button>
-                            <button disabled={confirmingSale} className='py-2 px-4 w-full cursor-pointer border border-gray-300 rounded-md bg-black text-white' onClick={handleConfirmSale}>
+                            <button disabled={confirmingSale} className='py-2 px-4 w-full cursor-pointer border border-gray-300 rounded-md bg-black text-white flex items-center gap-1' onClick={handleConfirmSale}>
                                 {confirmingSale && <Loader className='animate-spin' size={18} />}
                                 {confirmingSale ? 'Processing...' : 'Confirm Sale'}
                             </button>
