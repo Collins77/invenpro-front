@@ -146,7 +146,7 @@ const Pos = () => {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        sale: savedSale,       // The saved sale object
+                        sale: savedSale.sale,       // The saved sale object
                         saleItems: cart        // The cart items
                     })
                 });
