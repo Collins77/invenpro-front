@@ -147,7 +147,7 @@ const Pos = () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         sale: savedSale.sale,       // The saved sale object
-                        saleItems: cart        // The cart items
+                        items: cart        // The cart items
                     })
                 });
             } catch (printErr) {
