@@ -115,19 +115,20 @@ const Pos = () => {
             // toast.success('Sale confirmed!');
             // 1️⃣ Save the sale and generate receipt on backend
             const savedSale = await createSale(saleData);
+            console.log(savedSale)
 
-            // 2️⃣ Call Node agent to print receipt
-            // Assuming Node agent is running at http://localhost:3001/print
-            await fetch('http://localhost:4000/print', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    sale: savedSale.sale,
-                    saleItems: savedSale.items,
-                }),
-            });
+            // // 2️⃣ Call Node agent to print receipt
+            // // Assuming Node agent is running at http://localhost:3001/print
+            // await fetch('http://localhost:4000/print', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({
+            //         sale: savedSale.sale,
+            //         saleItems: savedSale.items,
+            //     }),
+            // });
 
             toast.success('Sale confirmed and receipt sent to printer!');
             // Update product stock in frontend
@@ -138,6 +139,21 @@ const Pos = () => {
                 }
                 return product;
             }));
+
+            // 2️⃣ Send to Node agent for printing
+            try {
+                await fetch('http://localhost:4000/print', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sale: savedSale,       // The saved sale object
+                        saleItems: cart        // The cart items
+                    })
+                });
+            } catch (printErr) {
+                console.error('Printing failed:', printErr);
+                toast.error('Failed to send receipt to printer');
+            }
             resetCart();
         } catch (err) {
             console.error(err);
