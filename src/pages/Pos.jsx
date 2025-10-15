@@ -111,8 +111,25 @@ const Pos = () => {
                 date: new Date().toISOString(),
             };
 
-            await createSale(saleData);
-            toast.success('Sale confirmed!');
+            // await createSale(saleData);
+            // toast.success('Sale confirmed!');
+            // 1️⃣ Save the sale and generate receipt on backend
+            const savedSale = await createSale(saleData);
+
+            // 2️⃣ Call Node agent to print receipt
+            // Assuming Node agent is running at http://localhost:3001/print
+            await fetch('http://localhost:4000/print', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sale: savedSale.sale,
+                    saleItems: savedSale.items,
+                }),
+            });
+
+            toast.success('Sale confirmed and receipt sent to printer!');
             // Update product stock in frontend
             setProducts(prevProducts => prevProducts.map(product => {
                 const soldItem = cart.find(c => c.productId === product.id);
