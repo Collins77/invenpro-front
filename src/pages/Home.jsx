@@ -19,22 +19,42 @@ const Home = () => {
   const [loading, setLoading] = useState(true)
   const [topProducts, setTopProducts] = useState([])
 
+  // useEffect(() => {
+  //   if (!sales.length) return
+
+  //   const productMap = {}
+  //   sales.forEach(sale => {
+  //     sale.items.forEach(item => {
+  //       productMap[item.Product?.name] = (productMap[item.Product?.name] || 0) + item.quantity
+  //     })
+  //   })
+
+  //   const top = Object.entries(productMap)
+  //     .sort((a, b) => b[1] - a[1])
+  //     .slice(0, 4)
+
+  //   setTopProducts(top)
+  // }, [sales])
   useEffect(() => {
-    if (!sales.length) return
+  if (!sales?.length) return;
 
-    const productMap = {}
-    sales.forEach(sale => {
-      sale.items.forEach(item => {
-        productMap[item.Product.name] = (productMap[item.Product.name] || 0) + item.quantity
-      })
-    })
+  const productMap = {};
 
-    const top = Object.entries(productMap)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 4)
+  sales.forEach(sale => {
+    sale.items?.forEach(item => {
+      const name = item.Product?.name;
+      if (name) {
+        productMap[name] = (productMap[name] || 0) + (item.quantity || 0);
+      }
+    });
+  });
 
-    setTopProducts(top)
-  }, [sales])
+  const top = Object.entries(productMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4);
+
+  setTopProducts(top);
+}, [sales]);
 
   useEffect(() => {
     const date = new Date()
